@@ -49,8 +49,8 @@ clean :
 	-rm src/ast/expressions/*.gch
 	-rm src/ast/statements/*.gch
 	-rm -r obj/*
-	-rm ${OUT}/lscc ${OUT}/lscc.dSYM
-	-rm ${OUT}/c_lexer ${OUT}/c_lexer.dSYM
-	-rm ${OUT}/c_parser ${OUT}/c_parser.dSYM
+	-rm -r ${OUT}/lscc ${OUT}/lscc.dSYM
+	-rm -r ${OUT}/c_lexer ${OUT}/c_lexer.dSYM
+	-rm -r ${OUT}/c_parser ${OUT}/c_parser.dSYM
 	mkdir -p obj/ast/expressions
 	mkdir -p obj/ast/statements
