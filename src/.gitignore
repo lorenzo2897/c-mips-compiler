@@ -1,1 +1,4 @@
 .DS_Store
+c_lexer.yy.cpp
+c_parser.tab.cpp
+c_parser.tab.hpp
