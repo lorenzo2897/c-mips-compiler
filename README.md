@@ -15,7 +15,7 @@ OPTIONS:
 
   -v, --version    Display compiler versions
 
-  -h, -?, --help   Display this help menu
+  -h, -?, --help   Display the help menu
 
   -d, --debug      Send verbose debug output to stderr
 
@@ -32,3 +32,7 @@ OPTIONS:
 
 If none specified, defaults to --compile
 ```
+
+## Checking makefile dependencies
+
+Makefile correctness can be checked by installing [make2graph](https://github.com/lindenb/makefile2graph) and running `test/makefile.sh` from the base directory.

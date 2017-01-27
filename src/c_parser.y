@@ -1,48 +1,18 @@
-%{
+%code requires{
 	#include <stdio.h>
 	#include <string.h>
 
 	#include <vector>
 	#include <string>
 
-	#include "ast/Node.hpp"
-	#include "ast/ProgramRoot.hpp"
-	#include "ast/Function.hpp"
-	#include "ast/Scope.hpp"
-
-	#include "ast/Statement.hpp"
-	#include "ast/statements/CaseStatement.hpp"
-	#include "ast/statements/CompoundStatement.hpp"
-	#include "ast/statements/ExpressionStatement.hpp"
-	#include "ast/statements/LabeledStatement.hpp"
-	#include "ast/statements/SwitchStatement.hpp"
-	#include "ast/statements/WhileStatement.hpp"
-	#include "ast/statements/ForStatement.hpp"
-	#include "ast/statements/ReturnStatement.hpp"
-	#include "ast/statements/BreakStatement.hpp"
-	#include "ast/statements/GotoStatement.hpp"
-	#include "ast/statements/IfStatement.hpp"
-
-	#include "ast/Expression.hpp"
-	#include "ast/expressions/InitialiserList.hpp"
-	#include "ast/expressions/AssignmentExpression.hpp"
-	#include "ast/expressions/CastExpression.hpp"
-	#include "ast/expressions/UnaryExpression.hpp"
-	#include "ast/expressions/FunctionCall.hpp"
-	#include "ast/expressions/ArrayAccess.hpp"
-	#include "ast/expressions/MemberAccess.hpp"
-	#include "ast/expressions/BinaryExpression.hpp"
-	#include "ast/expressions/TernaryExpression.hpp"
-
-	#include "ast/Variable.hpp"
-	#include "ast/Value.hpp"
+	#include "includes.hpp"
 
 	//! This is to fix problems when generating C++
     int yylex(void);
     void yyerror(const char *);
 
     extern Node* ast_root;
-%}
+}
 
 %union{
   char* s;

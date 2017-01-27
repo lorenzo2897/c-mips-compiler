@@ -6,8 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "ast/Node.hpp"
-#include "ast/Expression.hpp"
+#include "includes.hpp"
 
 #include "c_parser.tab.hpp"
 
