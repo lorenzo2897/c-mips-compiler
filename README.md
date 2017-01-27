@@ -1,4 +1,4 @@
-# LangProc coursework - LS2715
+# lscc : the langproc coursework C compiler
 
 ## Compiler command-line options
 
