@@ -11,7 +11,7 @@
 #include "c_parser.tab.hpp"
 
 /* version info */
-#define BUILD_VERSION "4"
+#define BUILD_VERSION "5"
 #define LEXER_VERSION "25"
 
 /* compiler modes */
