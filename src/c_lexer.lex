@@ -13,18 +13,20 @@
 
 #include "c_parser.tab.hpp"
 
-
 std::string consume_until_whitespace(char);
 void preprocessor_line(const char*);
 char parse_char_literal(const char* text);
 char* parse_string_literal(const char* text);
+std::string escape_text(std::string text);
 
 void yyerror (char const *s);
 
 int currLine = 1;
 std::string currentSourceFile = "";
 int currentSourceLine = 1;
+int currentSourceCol = 1;
 
+#define COUNTCOL currentSourceCol += yyleng
 
 struct TokenEntry {
 	std::string TokenText;
@@ -33,6 +35,7 @@ struct TokenEntry {
 	int LineNum;
 	std::string SourceFile;
 	int SourceLine;
+	int SourceCol;
 
 	TokenEntry(std::string text, std::string tkclass, std::string type) :
 		TokenText(text),
@@ -40,12 +43,24 @@ struct TokenEntry {
 		TokenType(type),
 		LineNum(currLine),
 		SourceFile(currentSourceFile),
-		SourceLine(currentSourceLine)
+		SourceLine(currentSourceLine),
+		SourceCol(currentSourceCol)
 	{
 	}
 
 	void out() {
 		fprintf(yyout, "%-20s %-14s %-16s %3d  %-14s %3d\n", TokenText.c_str(), TokenClass.c_str(), TokenType.c_str(), LineNum, SourceFile.c_str(), SourceLine);
+	}
+
+	void json() {
+		fprintf(yyout, "  {\"Text\" : %s, \"Class\" : %s, \"StreamLine\" : %s, \"SourceFile\" : %s, \"SourceLine\" : %s, \"SourceCol\" : %s},\n",
+			escape_text(TokenText).c_str(),
+			escape_text(TokenClass).c_str(),
+			std::to_string(LineNum).c_str(),
+			escape_text(SourceFile).c_str(),
+			std::to_string(SourceLine).c_str(),
+			std::to_string(SourceCol).c_str()
+		);
 	}
 };
 
@@ -76,109 +91,111 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 /* ************************ Rules ************************ */
 %%
 
-[ \t\r]+		{ } /* ignore whitespace */
-[\n]			{ currLine++; currentSourceLine++; yylineno++; } /* keep track of line numbers */
+[ \t\r]+		{ COUNTCOL; } /* ignore whitespace */
+[\n]			{ currLine++; currentSourceLine++; yylineno++; currentSourceCol = 1; } /* keep track of line numbers */
 
 "# "[0-9]+" "\".*\".*\n { preprocessor_line(yytext); } /* preprocessor line indicators */
 
-"void"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TVoid")); return TVOID; }
-"long"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TLong")); return TLONG; }
-"short"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TShort")); return TSHORT; }
-"char"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TChar")); return TCHAR; }
-"int"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TInt")); return TINT; }
-"float"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TFloat")); return TFLOAT; }
-"double"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "TDouble")); return TDOUBLE; }
+"void"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TVoid")); COUNTCOL; return TVOID; }
+"long"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TLong")); COUNTCOL; return TLONG; }
+"short"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TShort")); COUNTCOL; return TSHORT; }
+"char"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TChar")); COUNTCOL; return TCHAR; }
+"int"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TInt")); COUNTCOL; return TINT; }
+"float"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "TFloat")); COUNTCOL; return TFLOAT; }
+"double"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "TDouble")); COUNTCOL; return TDOUBLE; }
 
-"auto"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Auto")); return AUTO; }
-"const"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Const")); return CONST; }
-"extern"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Extern")); return EXTERN; }
-"register"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Register")); return REGISTER; }
-"static"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Static")); return STATIC; }
-"volatile"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Volatile")); return VOLATILE; }
-"unsigned"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Unsigned")); return UNSIGNED; }
-"signed"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Signed")); return SIGNED; }
+"auto"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Auto")); COUNTCOL; return AUTO; }
+"const"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Const")); COUNTCOL; return CONST; }
+"extern"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Extern")); COUNTCOL; return EXTERN; }
+"register"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Register")); COUNTCOL; return REGISTER; }
+"static"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Static")); COUNTCOL; return STATIC; }
+"volatile"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Volatile")); COUNTCOL; return VOLATILE; }
+"unsigned"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Unsigned")); COUNTCOL; return UNSIGNED; }
+"signed"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Signed")); COUNTCOL; return SIGNED; }
 
-"struct"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Struct")); return STRUCT; }
-"typedef"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Typedef")); return TYPEDEF; }
-"union"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Union")); return UNION; }
-"enum"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Enum")); return ENUM; }
+"struct"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Struct")); COUNTCOL; return STRUCT; }
+"typedef"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Typedef")); COUNTCOL; return TYPEDEF; }
+"union"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Union")); COUNTCOL; return UNION; }
+"enum"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Enum")); COUNTCOL; return ENUM; }
 
-"if"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "If")); return IF; }
-"else"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Else")); return ELSE; }
-"while"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "While")); return WHILE; }
-"do"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Do")); return DO; }
-"for"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "For")); return FOR; }
+"if"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "If")); COUNTCOL; return IF; }
+"else"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Else")); COUNTCOL; return ELSE; }
+"while"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "While")); COUNTCOL; return WHILE; }
+"do"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Do")); COUNTCOL; return DO; }
+"for"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "For")); COUNTCOL; return FOR; }
 
-"goto"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Goto")); return GOTO; }
-"break"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Break")); return BREAK; }
-"continue"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Continue")); return CONTINUE; }
-"return"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Return")); return RETURN; }
+"goto"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Goto")); COUNTCOL; return GOTO; }
+"break"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Break")); COUNTCOL; return BREAK; }
+"continue"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Continue")); COUNTCOL; return CONTINUE; }
+"return"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Return")); COUNTCOL; return RETURN; }
 
-"switch"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Switch")); return SWITCH; }
-"case"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Case")); return CASE; }
-"default"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Default")); return DEFAULT; }
+"switch"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Switch")); COUNTCOL; return SWITCH; }
+"case"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Case")); COUNTCOL; return CASE; }
+"default"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Default")); COUNTCOL; return DEFAULT; }
 
-"sizeof"			{ token_list.push_back(TokenEntry(yytext, "Operator", "SizeOf")); return SIZEOF; }
+"sizeof"			{ token_list.push_back(TokenEntry(yytext, "Operator", "SizeOf")); COUNTCOL; return SIZEOF; }
 
-"."					{ token_list.push_back(TokenEntry(yytext, "Operator", "Dot")); return '.'; }
-"->"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Arrow")); return ARROW; }
-","					{ token_list.push_back(TokenEntry(yytext, "Operator", "Comma")); return ','; }
-";"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Semicolon")); return ';'; }
-"..."				{ token_list.push_back(TokenEntry(yytext, "Operator", "Ellipsis")); return ELLIPSIS; }
-"("					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenParenthesis")); return '('; }
-")"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseParenthesis")); return ')'; }
-"["					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBracket")); return '['; }
-"]"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBracket")); return ']'; }
-"{"					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBrace")); return OPENBRACE; }
-"}"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBrace")); return CLOSEBRACE; }
+"."					{ token_list.push_back(TokenEntry(yytext, "Operator", "Dot")); COUNTCOL; return '.'; }
+"->"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Arrow")); COUNTCOL; return ARROW; }
+","					{ token_list.push_back(TokenEntry(yytext, "Operator", "Comma")); COUNTCOL; return ','; }
+";"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Semicolon")); COUNTCOL; return ';'; }
+"..."				{ token_list.push_back(TokenEntry(yytext, "Operator", "Ellipsis")); COUNTCOL; return ELLIPSIS; }
+"("					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenParenthesis")); COUNTCOL; return '('; }
+")"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseParenthesis")); COUNTCOL; return ')'; }
+"["					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBracket")); COUNTCOL; return '['; }
+"]"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBracket")); COUNTCOL; return ']'; }
+"{"					{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBrace")); COUNTCOL; return OPENBRACE; }
+"}"					{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBrace")); COUNTCOL; return CLOSEBRACE; }
 
-"+"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Plus")); return '+'; }
-"-"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Minus")); return '-'; }
-"*"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Star")); return '*'; }
-"/"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Slash")); return '/'; }
-"%"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Modulo")); return '%'; }
-"++"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Increment")); return INCREMENT; }
-"--"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Decrement")); return DECREMENT; }
+"+"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Plus")); COUNTCOL; return '+'; }
+"-"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Minus")); COUNTCOL; return '-'; }
+"*"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Star")); COUNTCOL; return '*'; }
+"/"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Slash")); COUNTCOL; return '/'; }
+"%"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Modulo")); COUNTCOL; return '%'; }
+"++"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Increment")); COUNTCOL; return INCREMENT; }
+"--"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Decrement")); COUNTCOL; return DECREMENT; }
 
-"!"					{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalNot")); return '!'; }
-"&&"				{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalAnd")); return LOGICALAND; }
-"||"				{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalOr")); return LOGICALOR; }
+"!"					{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalNot")); COUNTCOL; return '!'; }
+"&&"				{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalAnd")); COUNTCOL; return LOGICALAND; }
+"||"				{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalOr")); COUNTCOL; return LOGICALOR; }
 
-"&"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Ampersand")); return '&'; }
-"|"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Pipe")); return '|'; }
-"^"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Caret")); return '^'; }
-"~"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Tilde")); return '~'; }
-"<<"				{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftLeft")); return SHIFTLEFT; }
-">>"				{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftRight")); return SHIFTRIGHT; }
+"&"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Ampersand")); COUNTCOL; return '&'; }
+"|"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Pipe")); COUNTCOL; return '|'; }
+"^"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Caret")); COUNTCOL; return '^'; }
+"~"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Tilde")); COUNTCOL; return '~'; }
+"<<"				{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftLeft")); COUNTCOL; return SHIFTLEFT; }
+">>"				{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftRight")); COUNTCOL; return SHIFTRIGHT; }
 
-"?"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Question")); return '?'; }
-":"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Colon")); return ':'; }
+"?"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Question")); COUNTCOL; return '?'; }
+":"					{ token_list.push_back(TokenEntry(yytext, "Operator", "Colon")); COUNTCOL; return ':'; }
 
-"="					{ token_list.push_back(TokenEntry(yytext, "Operator", "Assign")); return '='; }
-"+="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPlus")); return ASSIGNPLUS; }
-"-="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignMinus")); return ASSIGNMINUS; }
-"*="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignStar")); return ASSIGNSTAR; }
-"/="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignSlash")); return ASSIGNSLASH; }
-"%="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignModulo")); return ASSIGNMODULO; }
-"&="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignAmpersand")); return ASSIGNAMPERSAND; }
-"|="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPipe")); return ASSIGNPIPE; }
-"^="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignCaret")); return ASSIGNCARET; }
-"<<="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignLeftShift")); return ASSIGNLEFTSHIFT; }
-">>="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignRightShift")); return ASSIGNRIGHTSHIFT; }
+"="					{ token_list.push_back(TokenEntry(yytext, "Operator", "Assign")); COUNTCOL; return '='; }
+"+="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPlus")); COUNTCOL; return ASSIGNPLUS; }
+"-="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignMinus")); COUNTCOL; return ASSIGNMINUS; }
+"*="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignStar")); COUNTCOL; return ASSIGNSTAR; }
+"/="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignSlash")); COUNTCOL; return ASSIGNSLASH; }
+"%="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignModulo")); COUNTCOL; return ASSIGNMODULO; }
+"&="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignAmpersand")); COUNTCOL; return ASSIGNAMPERSAND; }
+"|="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPipe")); COUNTCOL; return ASSIGNPIPE; }
+"^="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignCaret")); COUNTCOL; return ASSIGNCARET; }
+"<<="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignLeftShift")); COUNTCOL; return ASSIGNLEFTSHIFT; }
+">>="				{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignRightShift")); COUNTCOL; return ASSIGNRIGHTSHIFT; }
 
-"<"					{ token_list.push_back(TokenEntry(yytext, "Operator", "LessThan")); return '<'; }
-">"					{ token_list.push_back(TokenEntry(yytext, "Operator", "GreaterThan")); return '>'; }
-"=="				{ token_list.push_back(TokenEntry(yytext, "Operator", "Equals")); return EQUALS; }
-"!="				{ token_list.push_back(TokenEntry(yytext, "Operator", "NotEquals")); return NOTEQUALS; }
-"<="				{ token_list.push_back(TokenEntry(yytext, "Operator", "LessOrEqual")); return LESSOREQUAL; }
-">="				{ token_list.push_back(TokenEntry(yytext, "Operator", "MoreOrEqual")); return MOREOREQUAL; }
+"<"					{ token_list.push_back(TokenEntry(yytext, "Operator", "LessThan")); COUNTCOL; return '<'; }
+">"					{ token_list.push_back(TokenEntry(yytext, "Operator", "GreaterThan")); COUNTCOL; return '>'; }
+"=="				{ token_list.push_back(TokenEntry(yytext, "Operator", "Equals")); COUNTCOL; return EQUALS; }
+"!="				{ token_list.push_back(TokenEntry(yytext, "Operator", "NotEquals")); COUNTCOL; return NOTEQUALS; }
+"<="				{ token_list.push_back(TokenEntry(yytext, "Operator", "LessOrEqual")); COUNTCOL; return LESSOREQUAL; }
+">="				{ token_list.push_back(TokenEntry(yytext, "Operator", "MoreOrEqual")); COUNTCOL; return MOREOREQUAL; }
 
 {CHARLITERAL}		{ token_list.push_back(TokenEntry(yytext, "Constant", "CharLiteral"));
 					yylval.c = parse_char_literal(yytext);
+					COUNTCOL;
 					return CHARLITERAL; }
 
 {STRINGLITERAL}		{ token_list.push_back(TokenEntry(yytext, "StringLiteral", "StringLiteral"));
 					yylval.s = parse_string_literal(yytext);
+					COUNTCOL;
 					return STRINGLITERAL; }
 
 {OCTINT}			{ token_list.push_back(TokenEntry(yytext, "Constant", "OctInt"));
@@ -188,31 +205,38 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 						}
 					}
 					yylval.i = strtol(yytext, NULL, 8);
+					COUNTCOL;
 					return OCTINT; } /* must be before decimal int! */
 
 {DECINT}			{ token_list.push_back(TokenEntry(yytext, "Constant", "DecInt"));
 					yylval.i = atoi(yytext);
+					COUNTCOL;
 					return DECINT; } /* must be after octal int! */
 
 {HEXINT}			{ token_list.push_back(TokenEntry(yytext, "Constant", "HexInt"));
 					yylval.i = strtol(yytext, NULL, 16);
+					COUNTCOL;
 					return HEXINT; }
 
 {FLOATINGDOUBLE}	{ token_list.push_back(TokenEntry(yytext, "Constant", "FloatingPoint"));
 					yylval.d = atof(yytext);
+					COUNTCOL;
 					return FLOATINGDOUBLE; }
 
 {FLOATINGPOINT}		{ token_list.push_back(TokenEntry(yytext, "Constant", "FloatingPoint"));
 					yylval.f = atof(yytext);
+					COUNTCOL;
 					return FLOATINGPOINT; }
 
 {IDENTIFIER}		{ token_list.push_back(TokenEntry(yytext, "Identifier", "Identifier"));
 					yylval.s = strdup(yytext);
+					COUNTCOL;
 					return IDENTIFIER; }
 
 .					{
 						std::string val = consume_until_whitespace(*yytext);
 						token_list.push_back(TokenEntry(val, "Invalid", "Invalid"));
+						COUNTCOL;
 					} /* anything else is invalid */
 
 %%
@@ -307,6 +331,7 @@ void preprocessor_line(const char* text) {
 	currentSourceFile = sourcefile;
 	currentSourceLine = atoi(linenum.c_str());
 	currLine++;
+	currentSourceCol = 1;
 }
 
 char parse_escape_sequence(const char*& str) {
@@ -432,7 +457,49 @@ char* parse_string_literal(const char* text) {
 	}
 
 	return strdup(buf.c_str());
-};
+}
+
+std::string escape_text(std::string text) {
+	std::string res = "\"";
+	for(std::string::iterator itr = text.begin(); itr != text.end(); ++itr) {
+		char c = *itr;
+		switch (c) {
+			case '\a':
+				res += "\\a";
+				break;
+			case '\b':
+				res += "\\b";
+				break;
+			case '\f':
+				res += "\\f";
+				break;
+			case '\n':
+				res += "\\n";
+				break;
+			case '\r':
+				res += "\\r";
+				break;
+			case '\t':
+				res += "\\t";
+				break;
+			case '\v':
+				res += "\\v";
+				break;
+			case '\\':
+				res += "\\\\";
+				break;
+			case '\"':
+				res += "\\\"";
+				break;
+			default:
+				res += c;
+				break;
+		}
+	}
+	res += "\"";
+
+	return res;
+}
 
 
 void yyerror (char const *s) {
@@ -453,4 +520,12 @@ void print_tokens() {
 		(*itr).out();
 	}
 	fprintf(yyout, "\nTotal lines = %d\n", currLine);
+}
+
+void print_json_tokens() {
+	fprintf(yyout, "\n[\n");
+	for(std::vector<TokenEntry>::iterator itr = token_list.begin(); itr != token_list.end(); ++itr) {
+		(*itr).json();
+	}
+	fprintf(yyout, "  {}\n]\n");
 }

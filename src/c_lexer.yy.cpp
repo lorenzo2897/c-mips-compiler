@@ -648,18 +648,20 @@ char *yytext;
 
 #include "c_parser.tab.hpp"
 
-
 std::string consume_until_whitespace(char);
 void preprocessor_line(const char*);
 char parse_char_literal(const char* text);
 char* parse_string_literal(const char* text);
+std::string escape_text(std::string text);
 
 void yyerror (char const *s);
 
 int currLine = 1;
 std::string currentSourceFile = "";
 int currentSourceLine = 1;
+int currentSourceCol = 1;
 
+#define COUNTCOL currentSourceCol += yyleng
 
 struct TokenEntry {
 	std::string TokenText;
@@ -668,6 +670,7 @@ struct TokenEntry {
 	int LineNum;
 	std::string SourceFile;
 	int SourceLine;
+	int SourceCol;
 
 	TokenEntry(std::string text, std::string tkclass, std::string type) :
 		TokenText(text),
@@ -675,12 +678,24 @@ struct TokenEntry {
 		TokenType(type),
 		LineNum(currLine),
 		SourceFile(currentSourceFile),
-		SourceLine(currentSourceLine)
+		SourceLine(currentSourceLine),
+		SourceCol(currentSourceCol)
 	{
 	}
 
 	void out() {
 		fprintf(yyout, "%-20s %-14s %-16s %3d  %-14s %3d\n", TokenText.c_str(), TokenClass.c_str(), TokenType.c_str(), LineNum, SourceFile.c_str(), SourceLine);
+	}
+
+	void json() {
+		fprintf(yyout, "  {\"Text\" : %s, \"Class\" : %s, \"StreamLine\" : %s, \"SourceFile\" : %s, \"SourceLine\" : %s, \"SourceCol\" : %s},\n",
+			escape_text(TokenText).c_str(),
+			escape_text(TokenClass).c_str(),
+			std::to_string(LineNum).c_str(),
+			escape_text(SourceFile).c_str(),
+			std::to_string(SourceLine).c_str(),
+			std::to_string(SourceCol).c_str()
+		);
 	}
 };
 
@@ -688,7 +703,7 @@ std::vector<TokenEntry> token_list;
 
 /* ********************* Definitions ********************* */
 /* ************************ Rules ************************ */
-#line 692 "src/c_lexer.yy.cpp"
+#line 707 "src/c_lexer.yy.cpp"
 
 #define INITIAL 0
 
@@ -870,10 +885,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 77 "src/c_lexer.lex"
+#line 92 "src/c_lexer.lex"
 
 
-#line 877 "src/c_lexer.yy.cpp"
+#line 892 "src/c_lexer.yy.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -958,430 +973,432 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 79 "src/c_lexer.lex"
-{ } /* ignore whitespace */
+#line 94 "src/c_lexer.lex"
+{ COUNTCOL; } /* ignore whitespace */
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 80 "src/c_lexer.lex"
-{ currLine++; currentSourceLine++; yylineno++; } /* keep track of line numbers */
+#line 95 "src/c_lexer.lex"
+{ currLine++; currentSourceLine++; yylineno++; currentSourceCol = 1; } /* keep track of line numbers */
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 82 "src/c_lexer.lex"
+#line 97 "src/c_lexer.lex"
 { preprocessor_line(yytext); } /* preprocessor line indicators */
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 84 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TVoid")); return TVOID; }
+#line 99 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TVoid")); COUNTCOL; return TVOID; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 85 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TLong")); return TLONG; }
+#line 100 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TLong")); COUNTCOL; return TLONG; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 86 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TShort")); return TSHORT; }
+#line 101 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TShort")); COUNTCOL; return TSHORT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 87 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TChar")); return TCHAR; }
+#line 102 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TChar")); COUNTCOL; return TCHAR; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 88 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TInt")); return TINT; }
+#line 103 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TInt")); COUNTCOL; return TINT; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 89 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TFloat")); return TFLOAT; }
+#line 104 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TFloat")); COUNTCOL; return TFLOAT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 90 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "TDouble")); return TDOUBLE; }
+#line 105 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "TDouble")); COUNTCOL; return TDOUBLE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 92 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Auto")); return AUTO; }
+#line 107 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Auto")); COUNTCOL; return AUTO; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 93 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Const")); return CONST; }
+#line 108 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Const")); COUNTCOL; return CONST; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 94 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Extern")); return EXTERN; }
+#line 109 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Extern")); COUNTCOL; return EXTERN; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 95 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Register")); return REGISTER; }
+#line 110 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Register")); COUNTCOL; return REGISTER; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 96 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Static")); return STATIC; }
+#line 111 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Static")); COUNTCOL; return STATIC; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 97 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Volatile")); return VOLATILE; }
+#line 112 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Volatile")); COUNTCOL; return VOLATILE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 98 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Unsigned")); return UNSIGNED; }
+#line 113 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Unsigned")); COUNTCOL; return UNSIGNED; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 99 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Signed")); return SIGNED; }
+#line 114 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Signed")); COUNTCOL; return SIGNED; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 101 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Struct")); return STRUCT; }
+#line 116 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Struct")); COUNTCOL; return STRUCT; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 102 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Typedef")); return TYPEDEF; }
+#line 117 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Typedef")); COUNTCOL; return TYPEDEF; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 103 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Union")); return UNION; }
+#line 118 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Union")); COUNTCOL; return UNION; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 104 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Enum")); return ENUM; }
+#line 119 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Enum")); COUNTCOL; return ENUM; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 106 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "If")); return IF; }
+#line 121 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "If")); COUNTCOL; return IF; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 107 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Else")); return ELSE; }
+#line 122 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Else")); COUNTCOL; return ELSE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 108 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "While")); return WHILE; }
+#line 123 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "While")); COUNTCOL; return WHILE; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 109 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Do")); return DO; }
+#line 124 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Do")); COUNTCOL; return DO; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 110 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "For")); return FOR; }
+#line 125 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "For")); COUNTCOL; return FOR; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 112 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Goto")); return GOTO; }
+#line 127 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Goto")); COUNTCOL; return GOTO; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 113 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Break")); return BREAK; }
+#line 128 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Break")); COUNTCOL; return BREAK; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 114 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Continue")); return CONTINUE; }
+#line 129 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Continue")); COUNTCOL; return CONTINUE; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 115 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Return")); return RETURN; }
+#line 130 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Return")); COUNTCOL; return RETURN; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 117 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Switch")); return SWITCH; }
+#line 132 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Switch")); COUNTCOL; return SWITCH; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 118 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Case")); return CASE; }
+#line 133 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Case")); COUNTCOL; return CASE; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 119 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Keyword", "Default")); return DEFAULT; }
+#line 134 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Keyword", "Default")); COUNTCOL; return DEFAULT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 121 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "SizeOf")); return SIZEOF; }
+#line 136 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "SizeOf")); COUNTCOL; return SIZEOF; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 123 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Dot")); return '.'; }
+#line 138 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Dot")); COUNTCOL; return '.'; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 124 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Arrow")); return ARROW; }
+#line 139 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Arrow")); COUNTCOL; return ARROW; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 125 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Comma")); return ','; }
+#line 140 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Comma")); COUNTCOL; return ','; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 126 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Semicolon")); return ';'; }
+#line 141 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Semicolon")); COUNTCOL; return ';'; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 127 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Ellipsis")); return ELLIPSIS; }
+#line 142 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Ellipsis")); COUNTCOL; return ELLIPSIS; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 128 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenParenthesis")); return '('; }
+#line 143 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenParenthesis")); COUNTCOL; return '('; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 129 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseParenthesis")); return ')'; }
+#line 144 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseParenthesis")); COUNTCOL; return ')'; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 130 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBracket")); return '['; }
+#line 145 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBracket")); COUNTCOL; return '['; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 131 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBracket")); return ']'; }
+#line 146 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBracket")); COUNTCOL; return ']'; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 132 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBrace")); return OPENBRACE; }
+#line 147 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "OpenBrace")); COUNTCOL; return OPENBRACE; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 133 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBrace")); return CLOSEBRACE; }
+#line 148 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "CloseBrace")); COUNTCOL; return CLOSEBRACE; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 135 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Plus")); return '+'; }
+#line 150 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Plus")); COUNTCOL; return '+'; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 136 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Minus")); return '-'; }
+#line 151 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Minus")); COUNTCOL; return '-'; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 137 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Star")); return '*'; }
+#line 152 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Star")); COUNTCOL; return '*'; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 138 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Slash")); return '/'; }
+#line 153 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Slash")); COUNTCOL; return '/'; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 139 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Modulo")); return '%'; }
+#line 154 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Modulo")); COUNTCOL; return '%'; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 140 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Increment")); return INCREMENT; }
+#line 155 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Increment")); COUNTCOL; return INCREMENT; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 141 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Decrement")); return DECREMENT; }
+#line 156 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Decrement")); COUNTCOL; return DECREMENT; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 143 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalNot")); return '!'; }
+#line 158 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalNot")); COUNTCOL; return '!'; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 144 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalAnd")); return LOGICALAND; }
+#line 159 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalAnd")); COUNTCOL; return LOGICALAND; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 145 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalOr")); return LOGICALOR; }
+#line 160 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "LogicalOr")); COUNTCOL; return LOGICALOR; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 147 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Ampersand")); return '&'; }
+#line 162 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Ampersand")); COUNTCOL; return '&'; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 148 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Pipe")); return '|'; }
+#line 163 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Pipe")); COUNTCOL; return '|'; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 149 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Caret")); return '^'; }
+#line 164 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Caret")); COUNTCOL; return '^'; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 150 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Tilde")); return '~'; }
+#line 165 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Tilde")); COUNTCOL; return '~'; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 151 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftLeft")); return SHIFTLEFT; }
+#line 166 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftLeft")); COUNTCOL; return SHIFTLEFT; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 152 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftRight")); return SHIFTRIGHT; }
+#line 167 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "ShiftRight")); COUNTCOL; return SHIFTRIGHT; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 154 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Question")); return '?'; }
+#line 169 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Question")); COUNTCOL; return '?'; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 155 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Colon")); return ':'; }
+#line 170 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Colon")); COUNTCOL; return ':'; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 157 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Assign")); return '='; }
+#line 172 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Assign")); COUNTCOL; return '='; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 158 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPlus")); return ASSIGNPLUS; }
+#line 173 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPlus")); COUNTCOL; return ASSIGNPLUS; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 159 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignMinus")); return ASSIGNMINUS; }
+#line 174 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignMinus")); COUNTCOL; return ASSIGNMINUS; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 160 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignStar")); return ASSIGNSTAR; }
+#line 175 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignStar")); COUNTCOL; return ASSIGNSTAR; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 161 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignSlash")); return ASSIGNSLASH; }
+#line 176 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignSlash")); COUNTCOL; return ASSIGNSLASH; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 162 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignModulo")); return ASSIGNMODULO; }
+#line 177 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignModulo")); COUNTCOL; return ASSIGNMODULO; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 163 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignAmpersand")); return ASSIGNAMPERSAND; }
+#line 178 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignAmpersand")); COUNTCOL; return ASSIGNAMPERSAND; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 164 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPipe")); return ASSIGNPIPE; }
+#line 179 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignPipe")); COUNTCOL; return ASSIGNPIPE; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 165 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignCaret")); return ASSIGNCARET; }
+#line 180 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignCaret")); COUNTCOL; return ASSIGNCARET; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 166 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignLeftShift")); return ASSIGNLEFTSHIFT; }
+#line 181 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignLeftShift")); COUNTCOL; return ASSIGNLEFTSHIFT; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 167 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignRightShift")); return ASSIGNRIGHTSHIFT; }
+#line 182 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "AssignRightShift")); COUNTCOL; return ASSIGNRIGHTSHIFT; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 169 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "LessThan")); return '<'; }
+#line 184 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "LessThan")); COUNTCOL; return '<'; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 170 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "GreaterThan")); return '>'; }
+#line 185 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "GreaterThan")); COUNTCOL; return '>'; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 171 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "Equals")); return EQUALS; }
+#line 186 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "Equals")); COUNTCOL; return EQUALS; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 172 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "NotEquals")); return NOTEQUALS; }
+#line 187 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "NotEquals")); COUNTCOL; return NOTEQUALS; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 173 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "LessOrEqual")); return LESSOREQUAL; }
+#line 188 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "LessOrEqual")); COUNTCOL; return LESSOREQUAL; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 174 "src/c_lexer.lex"
-{ token_list.push_back(TokenEntry(yytext, "Operator", "MoreOrEqual")); return MOREOREQUAL; }
+#line 189 "src/c_lexer.lex"
+{ token_list.push_back(TokenEntry(yytext, "Operator", "MoreOrEqual")); COUNTCOL; return MOREOREQUAL; }
 	YY_BREAK
 case 82:
 /* rule 82 can match eol */
 YY_RULE_SETUP
-#line 176 "src/c_lexer.lex"
+#line 191 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "CharLiteral"));
 					yylval.c = parse_char_literal(yytext);
+					COUNTCOL;
 					return CHARLITERAL; }
 	YY_BREAK
 case 83:
 /* rule 83 can match eol */
 YY_RULE_SETUP
-#line 180 "src/c_lexer.lex"
+#line 196 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "StringLiteral", "StringLiteral"));
 					yylval.s = parse_string_literal(yytext);
+					COUNTCOL;
 					return STRINGLITERAL; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 184 "src/c_lexer.lex"
+#line 201 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "OctInt"));
 					for(char* textbuf = yytext; *textbuf; textbuf++) {
 						if(*textbuf == '8' || *textbuf == '9') {
@@ -1389,57 +1406,64 @@ YY_RULE_SETUP
 						}
 					}
 					yylval.i = strtol(yytext, NULL, 8);
+					COUNTCOL;
 					return OCTINT; } /* must be before decimal int! */
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 193 "src/c_lexer.lex"
+#line 211 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "DecInt"));
 					yylval.i = atoi(yytext);
+					COUNTCOL;
 					return DECINT; } /* must be after octal int! */
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 197 "src/c_lexer.lex"
+#line 216 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "HexInt"));
 					yylval.i = strtol(yytext, NULL, 16);
+					COUNTCOL;
 					return HEXINT; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 201 "src/c_lexer.lex"
+#line 221 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "FloatingPoint"));
 					yylval.d = atof(yytext);
+					COUNTCOL;
 					return FLOATINGDOUBLE; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 205 "src/c_lexer.lex"
+#line 226 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Constant", "FloatingPoint"));
 					yylval.f = atof(yytext);
+					COUNTCOL;
 					return FLOATINGPOINT; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 209 "src/c_lexer.lex"
+#line 231 "src/c_lexer.lex"
 { token_list.push_back(TokenEntry(yytext, "Identifier", "Identifier"));
 					yylval.s = strdup(yytext);
+					COUNTCOL;
 					return IDENTIFIER; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 213 "src/c_lexer.lex"
+#line 236 "src/c_lexer.lex"
 {
 						std::string val = consume_until_whitespace(*yytext);
 						token_list.push_back(TokenEntry(val, "Invalid", "Invalid"));
+						COUNTCOL;
 					} /* anything else is invalid */
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 218 "src/c_lexer.lex"
+#line 242 "src/c_lexer.lex"
 ECHO;
 	YY_BREAK
-#line 1443 "src/c_lexer.yy.cpp"
+#line 1467 "src/c_lexer.yy.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2436,7 +2460,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 218 "src/c_lexer.lex"
+#line 242 "src/c_lexer.lex"
 
 
 
@@ -2530,6 +2554,7 @@ void preprocessor_line(const char* text) {
 	currentSourceFile = sourcefile;
 	currentSourceLine = atoi(linenum.c_str());
 	currLine++;
+	currentSourceCol = 1;
 }
 
 char parse_escape_sequence(const char*& str) {
@@ -2655,7 +2680,49 @@ char* parse_string_literal(const char* text) {
 	}
 
 	return strdup(buf.c_str());
-};
+}
+
+std::string escape_text(std::string text) {
+	std::string res = "\"";
+	for(std::string::iterator itr = text.begin(); itr != text.end(); ++itr) {
+		char c = *itr;
+		switch (c) {
+			case '\a':
+				res += "\\a";
+				break;
+			case '\b':
+				res += "\\b";
+				break;
+			case '\f':
+				res += "\\f";
+				break;
+			case '\n':
+				res += "\\n";
+				break;
+			case '\r':
+				res += "\\r";
+				break;
+			case '\t':
+				res += "\\t";
+				break;
+			case '\v':
+				res += "\\v";
+				break;
+			case '\\':
+				res += "\\\\";
+				break;
+			case '\"':
+				res += "\\\"";
+				break;
+			default:
+				res += c;
+				break;
+		}
+	}
+	res += "\"";
+
+	return res;
+}
 
 
 void yyerror (char const *s) {
@@ -2676,5 +2743,13 @@ void print_tokens() {
 		(*itr).out();
 	}
 	fprintf(yyout, "\nTotal lines = %d\n", currLine);
+}
+
+void print_json_tokens() {
+	fprintf(yyout, "\n[\n");
+	for(std::vector<TokenEntry>::iterator itr = token_list.begin(); itr != token_list.end(); ++itr) {
+		(*itr).json();
+	}
+	fprintf(yyout, "  {}\n]\n");
 }
 

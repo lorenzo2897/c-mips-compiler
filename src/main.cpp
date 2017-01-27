@@ -18,11 +18,13 @@
 /* compiler modes */
 #define MODE_COMPILE 0
 #define MODE_LEX 1
-#define MODE_PARSE 2
-#define MODE_AST 3
+#define MODE_JSON 2
+#define MODE_PARSE 3
+#define MODE_AST 4
 
 /* lexer functions */
 void print_tokens();
+void print_json_tokens();
 int yylex();
 int yyparse();
 extern FILE* yyin;
@@ -34,7 +36,7 @@ bool has_suffix(const std::string& str, const std::string& suffix);
 void print_version();
 void print_help();
 void debug_ast();
-void print_ast();
+void print_xml_ast();
 void generate_mips();
 
 /* Will be written to by yyparse */
@@ -50,14 +52,14 @@ int main(int argc, char const *argv[]) {
 	// determine mode of operation
 	#ifdef program_mode
 		#if program_mode == lexer
-			mode = MODE_LEX;
+			mode = MODE_JSON;
 		#elif program_mode == parser
 			mode = MODE_PARSE;
 		#endif
 	#else
 		std::string binaryname = argv[0];
 		if(has_suffix(binaryname, "c_lexer")) {
-			mode = MODE_LEX;
+			mode = MODE_JSON;
 		} else if(has_suffix(binaryname, "c_parser")) {
 			mode = MODE_PARSE;
 		}
@@ -76,6 +78,8 @@ int main(int argc, char const *argv[]) {
 
 		} else if(strcmp(argv[i], "--lex") == 0) {
 			mode = MODE_LEX;
+		} else if(strcmp(argv[i], "--json") == 0) {
+			mode = MODE_JSON;
 		} else if(strcmp(argv[i], "--parse") == 0) {
 			mode = MODE_PARSE;
 		} else if(strcmp(argv[i], "--ast") == 0) {
@@ -132,9 +136,13 @@ int main(int argc, char const *argv[]) {
 			while(yylex());
 			print_tokens();
 			break;
+		case MODE_JSON:
+			while(yylex());
+			print_json_tokens();
+			break;
 		case MODE_PARSE:
 			yyparse();
-			print_ast();
+			print_xml_ast();
 			break;
 		case MODE_AST:
 			yyparse();
@@ -183,7 +191,7 @@ void debug_ast() {
 	ast_root->Debug(std::cout, 0);
 }
 
-void print_ast() {
+void print_xml_ast() {
 	ast_root->Print(std::cout, 0);
 }
 
