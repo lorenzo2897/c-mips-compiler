@@ -1,3 +1,6 @@
+lexer and parser
+===========================
+
 floating points:
 	better parsing. currently all interpreted as doubles and then truncated
 integers:
@@ -18,4 +21,20 @@ enum:
 function calls:
 	allow more than just calling by identifier
 	e.g. pointer to a function
-	parameter list in function declarations ...
+	parameter list in function declarations (...)
+
+
+testing
+===========================
+
+test json lexer:
+ - is the resulting json parse-able?
+ - are arbitrary strings escaped correctly in the json?
+ - do the tokens that need to be recognised get recognised?
+ - do invalid symbols get rejected?
+ - are the line numbers, file names, and columns correct?
+ - are multi-char symbols split correctly? e.g. +, ++
+ - is whitespace handled correctly? e.g. (x=2) versus (longintx)
+ *
+ - php script to generate random C tokens
+ - php to check the json output and see if it matches what was intended
