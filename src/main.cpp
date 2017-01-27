@@ -181,8 +181,10 @@ void print_help() {
 	std::cout << "  -v, --version    Display compiler versions\n\n";
 	std::cout << "  -h, -?, --help   Display this help menu\n\n";
 	std::cout << "  -d, --debug      Send verbose debug output to stderr\n\n";
-	std::cout << "  --lex            Tokenise the input\n\n";
-	std::cout << "  --parse          Parse the input into AST\n\n";
+	std::cout << "  --lex            Tokenise the input, format as table\n\n";
+	std::cout << "  --json           Tokenise the input, format as JSON\n\n";
+	std::cout << "  --ast            Parse the input into AST, format as text\n\n";
+	std::cout << "  --parse          Parse the input into AST, format as XML\n\n";
 	std::cout << "  -S, --compile    Compile the C code into MIPS assembly\n\n";
 	std::cout << "\nIf none specified, defaults to --compile" << std::endl << std::endl;
 }
