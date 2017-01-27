@@ -53,13 +53,13 @@ struct TokenEntry {
 	}
 
 	void json() {
-		fprintf(yyout, "  {\"Text\" : %s, \"Class\" : %s, \"StreamLine\" : %s, \"SourceFile\" : %s, \"SourceLine\" : %s, \"SourceCol\" : %s},\n",
+		fprintf(yyout, "  {\"Text\" : %s, \"Class\" : %s, \"StreamLine\" : %d, \"SourceFile\" : %s, \"SourceLine\" : %d, \"SourceCol\" : %d},\n",
 			escape_text(TokenText).c_str(),
 			escape_text(TokenClass).c_str(),
-			std::to_string(LineNum).c_str(),
+			LineNum,
 			escape_text(SourceFile).c_str(),
-			std::to_string(SourceLine).c_str(),
-			std::to_string(SourceCol).c_str()
+			SourceLine,
+			SourceCol
 		);
 	}
 };

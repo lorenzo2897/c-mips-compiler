@@ -29,12 +29,12 @@ ${OUT}/c_parser : compiler
 all : compiler ${OUT}/c_lexer ${OUT}/c_parser
 
 clean :
-	rm -f src/c_lexer.yy.cpp
-	rm -f src/c_parser.tab.cpp
-	rm -f src/c_parser.tab.hpp
-	rm -f src/ast/*.gch
-	rm -f src/ast/expressions/*.gch
-	rm -f src/ast/statements/*.gch
-	rm -f ${OUT}/lscc
-	rm -f ${OUT}/c_lexer
-	rm -f ${OUT}/c_parser
+	-rm src/c_lexer.yy.cpp
+	-rm src/c_parser.tab.cpp
+	-rm src/c_parser.tab.hpp
+	-rm src/ast/*.gch
+	-rm src/ast/expressions/*.gch
+	-rm src/ast/statements/*.gch
+	-rm ${OUT}/lscc ${OUT}/lscc.dSYM
+	-rm ${OUT}/c_lexer ${OUT}/c_lexer.dSYM
+	-rm ${OUT}/c_parser ${OUT}/c_parser.dSYM
