@@ -33,6 +33,14 @@ OPTIONS:
 If none specified, defaults to --compile
 ```
 
-## Checking makefile dependencies
+## Testing the compiler
+
+### Checking makefile dependencies
 
 Makefile correctness can be checked by installing [make2graph](https://github.com/lindenb/makefile2graph) and running `test/makefile.sh` from the base directory.
+
+### Testing the tokeniser
+
+Run `php test/lexer.php` to generate random C tokens and feed them through the lexer to test its functionality.
+
+Make sure you `make bin/c_lexer` beforehand!
