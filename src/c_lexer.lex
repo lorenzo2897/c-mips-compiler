@@ -193,12 +193,28 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 
 {CHARLITERAL}		{ token_list.push_back(TokenEntry(yytext, "Constant", "CharLiteral"));
 					yylval.c = parse_char_literal(yytext);
-					COUNTCOL;
+					// count columns or tabs
+					for(char* textptr = yytext; *textptr != 0; textptr++) {
+						char c = *textptr;
+						if(c == '\t') {
+							currentSourceCol += 8;
+						} else {
+							currentSourceCol++;
+						}
+					}
 					return CHARLITERAL; }
 
 {STRINGLITERAL}		{ token_list.push_back(TokenEntry(strip_outer_quotes(yytext), "StringLiteral", "StringLiteral"));
 					yylval.s = parse_string_literal(yytext);
-					COUNTCOL;
+					// count columns or tabs
+					for(char* textptr = yytext; *textptr != 0; textptr++) {
+						char c = *textptr;
+						if(c == '\t') {
+							currentSourceCol += 8;
+						} else {
+							currentSourceCol++;
+						}
+					}
 					return STRINGLITERAL; }
 
 {OCTINT}			{ token_list.push_back(TokenEntry(yytext, "Constant", "OctInt"));
