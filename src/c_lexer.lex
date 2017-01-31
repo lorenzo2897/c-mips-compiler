@@ -84,8 +84,8 @@ FP_NUMDOT [0-9]+"."[0-9]*({POWERNOTATION})?
 FLOATINGPOINT ({FP_POWER})|({FP_DOTNUM})|({FP_NUMDOT})(f|F)
 FLOATINGDOUBLE ({FP_POWER})|({FP_DOTNUM})|({FP_NUMDOT})(l|L)?
 
-CHARLITERAL L?'(\\.|[^\\'])+'
-STRINGLITERAL L?\"(\\.|[^\\"])*\"
+CHARLITERAL L?'(\\.|[^\\'\n])+'
+STRINGLITERAL L?\"(\\.|[^\\"\n])*\"
 
 IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 
