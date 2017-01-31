@@ -135,7 +135,7 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 "case"				{ token_list.push_back(TokenEntry(yytext, "Keyword", "Case")); COUNTCOL; return CASE; }
 "default"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "Default")); COUNTCOL; return DEFAULT; }
 
-"sizeof"			{ token_list.push_back(TokenEntry(yytext, "Operator", "SizeOf")); COUNTCOL; return SIZEOF; }
+"sizeof"			{ token_list.push_back(TokenEntry(yytext, "Keyword", "SizeOf")); COUNTCOL; return SIZEOF; }
 
 "."					{ token_list.push_back(TokenEntry(yytext, "Operator", "Dot")); COUNTCOL; return '.'; }
 "->"				{ token_list.push_back(TokenEntry(yytext, "Operator", "Arrow")); COUNTCOL; return ARROW; }
