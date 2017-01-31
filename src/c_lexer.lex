@@ -13,6 +13,7 @@
 
 #include "c_parser.tab.hpp"
 
+std::string strip_outer_quotes(const char* text);
 std::string consume_until_whitespace(char);
 void preprocessor_line(const char*);
 char parse_char_literal(const char* text);
@@ -195,7 +196,7 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 					COUNTCOL;
 					return CHARLITERAL; }
 
-{STRINGLITERAL}		{ token_list.push_back(TokenEntry(yytext, "StringLiteral", "StringLiteral"));
+{STRINGLITERAL}		{ token_list.push_back(TokenEntry(strip_outer_quotes(yytext), "StringLiteral", "StringLiteral"));
 					yylval.s = parse_string_literal(yytext);
 					COUNTCOL;
 					return STRINGLITERAL; }
@@ -244,6 +245,11 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 %%
 
 /* ********************* Subroutines ********************* */
+
+std::string strip_outer_quotes(const char* text) {
+	std::string s = text;
+	return s.substr(1, s.size() - 2);
+}
 
 std::string consume_until_whitespace(char first) {
 	char c = 0;
