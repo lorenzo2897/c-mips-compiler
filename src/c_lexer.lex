@@ -472,9 +472,6 @@ std::string escape_text(std::string text) {
 	for(std::string::iterator itr = text.begin(); itr != text.end(); ++itr) {
 		char c = *itr;
 		switch (c) {
-			case '\a':
-				res += "\\a";
-				break;
 			case '\b':
 				res += "\\b";
 				break;
@@ -489,9 +486,6 @@ std::string escape_text(std::string text) {
 				break;
 			case '\t':
 				res += "\\t";
-				break;
-			case '\v':
-				res += "\\v";
 				break;
 			case '\\':
 				res += "\\\\";
