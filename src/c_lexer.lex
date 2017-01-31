@@ -91,7 +91,9 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 /* ************************ Rules ************************ */
 %%
 
-[ \t\r]+		{ COUNTCOL; } /* ignore whitespace */
+[ ]+			{ COUNTCOL; } /* ignore whitespace */
+[\t]+			{ currentSourceCol += 8; }
+[\r]+			{ }
 [\n]			{ currLine++; currentSourceLine++; yylineno++; currentSourceCol = 1; } /* keep track of line numbers */
 
 "# "[0-9]+" "\".*\".*\n { preprocessor_line(yytext); } /* preprocessor line indicators */
