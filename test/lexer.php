@@ -2,10 +2,12 @@
 require('inc/run_program.inc.php');
 require('inc/c_tokens.inc.php');
 
+define("NUM_TESTS", 400);
 
 $passed_num = 0;
+$failed_num = 0;
 
-for($test_num = 0; $test_num < 1000; $test_num++) {
+for($test_num = 0; $test_num < NUM_TESTS; $test_num++) {
 	
 	// generate random C tokens
 	$tokens = array();
@@ -121,10 +123,17 @@ for($test_num = 0; $test_num < 1000; $test_num++) {
 		$passed_num++;
 		echo "T" . $test_num . ":" . $src_i . "  ";
 	} else {
+		$failed_num++;
 		echo "T" . $test_num . " failed\n\n";
 	}
 }
 
-echo "\n\nPASSED " . $passed_num . " TESTS\n";
+echo "\n\nPASSED " . $passed_num . " TESTS OUT OF " . NUM_TESTS . "\n";
+
+if($failed_num > 0) {
+	die(1);
+} else {
+	die(0);
+}
 
 ?>
