@@ -50,11 +50,7 @@ int main(int argc, char const *argv[]) {
 
 	// determine mode of operation
 	#ifdef program_mode
-		#if program_mode == lexer
-			mode = MODE_JSON;
-		#elif program_mode == parser
-			mode = MODE_PARSE;
-		#endif
+		mode = program_mode;
 	#else
 		std::string binaryname = argv[0];
 		if(has_suffix(binaryname, "c_lexer")) {
@@ -79,7 +75,7 @@ int main(int argc, char const *argv[]) {
 			mode = MODE_LEX;
 		} else if(strcmp(argv[i], "--json") == 0) {
 			mode = MODE_JSON;
-		} else if(strcmp(argv[i], "--parse") == 0) {
+		} else if(strcmp(argv[i], "--parse") == 0 || strcmp(argv[i], "--xml") == 0) {
 			mode = MODE_PARSE;
 		} else if(strcmp(argv[i], "--ast") == 0) {
 			mode = MODE_AST;
@@ -183,7 +179,7 @@ void print_help() {
 	std::cout << "  --lex            Tokenise the input, format as table\n\n";
 	std::cout << "  --json           Tokenise the input, format as JSON\n\n";
 	std::cout << "  --ast            Parse the input into AST, format as text\n\n";
-	std::cout << "  --parse          Parse the input into AST, format as XML\n\n";
+	std::cout << "  --parse, --xml   Parse the input into AST, format as XML\n\n";
 	std::cout << "  -S, --compile    Compile the C code into MIPS assembly\n\n";
 	std::cout << "\nIf none specified, defaults to --compile" << std::endl << std::endl;
 }
@@ -193,7 +189,7 @@ void debug_ast() {
 }
 
 void print_xml_ast() {
-	ast_root->Print(std::cout, 0);
+	ast_root->PrintXML(std::cout, 0);
 }
 
 void generate_mips() {

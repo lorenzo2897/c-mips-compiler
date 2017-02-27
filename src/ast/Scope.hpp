@@ -26,6 +26,8 @@ public:
 
 	void merge_declarations(Scope* scope);
 	void merge_statements(Scope* scope);
+
+	virtual void Debug(std::ostream& dst, int indent) const;
 };
 
 #endif

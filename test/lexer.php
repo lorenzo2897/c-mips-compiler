@@ -1,6 +1,6 @@
 <?php
-require('run_program.inc.php');
-require('c_tokens.inc.php');
+require('inc/run_program.inc.php');
+require('inc/c_tokens.inc.php');
 
 
 $passed_num = 0;

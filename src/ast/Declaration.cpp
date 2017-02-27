@@ -22,3 +22,7 @@ void Declaration::Debug(std::ostream& dst, int indent) const {
 	}
 	dst << std::endl;
 }
+
+void Declaration::PrintXML(std::ostream& dst, int indent) const {
+	dst << spaces(indent) << "<Variable id=\"" << identifier << "\" />" << std::endl;
+}

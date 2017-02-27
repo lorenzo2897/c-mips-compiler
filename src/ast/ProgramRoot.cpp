@@ -15,6 +15,18 @@ void ProgramRoot::Debug(std::ostream& dst, int indent) const {
 	}
 }
 
+void ProgramRoot::PrintXML(std::ostream& dst, int indent) const {
+	dst << std::endl << std::endl << spaces(indent) << "<?xml version=\"1.0\"?>" << std::endl;
+	dst << spaces(indent) << "<Program>" << std::endl;
+	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
+		(*itr)->PrintXML(dst, indent+2);
+	}
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		(*itr)->PrintXML(dst, indent+2);
+	}
+	dst << spaces(indent) << "</Program>" << std::endl;
+}
+
 void ProgramRoot::add(Node* node) {
 	if(node == NULL) {
 		//fprintf(stderr, "warning: program root did not add item because pointer is null\n");

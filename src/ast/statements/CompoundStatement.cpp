@@ -30,3 +30,16 @@ void CompoundStatement::Debug(std::ostream& dst, int indent) const {
 
 	dst << std::endl << spaces(indent) << "}";
 }
+
+void CompoundStatement::PrintXML(std::ostream& dst, int indent) const {
+	dst << spaces(indent) << "<Scope>" << std::endl;
+	if (scope) {
+		for(std::vector<Declaration*>::const_iterator itr = scope->declarations.begin(); itr != scope->declarations.end(); ++itr) {
+			(*itr)->PrintXML(dst, indent+2);
+		}
+		for(std::vector<Statement*>::const_iterator itr = scope->statements.begin(); itr != scope->statements.end(); ++itr) {
+			(*itr)->PrintXML(dst, indent+2);
+		}
+	}
+	dst << spaces(indent) << "</Scope>" << std::endl;
+}

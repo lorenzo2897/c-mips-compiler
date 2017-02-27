@@ -31,10 +31,10 @@ obj/ast/statements/%.o : src/ast/statements/%.cpp
 # intermediate deliverables
 
 ${OUT}/c_lexer : compiler
-	g++ ${GCCOPT} -Dprogram_mode=lexer ${OBJS} src/main.cpp -o ${OUT}/c_lexer
+	g++ ${GCCOPT} -Dprogram_mode=MODE_JSON ${OBJS} src/main.cpp -o ${OUT}/c_lexer
 
 ${OUT}/c_parser : compiler
-	g++ ${GCCOPT} -Dprogram_mode=parser ${OBJS} src/main.cpp -o ${OUT}/c_parser
+	g++ ${GCCOPT} -Dprogram_mode=MODE_PARSE ${OBJS} src/main.cpp -o ${OUT}/c_parser
 
 
 # maintenance commands
@@ -48,7 +48,10 @@ clean :
 	-rm src/ast/*.gch
 	-rm src/ast/expressions/*.gch
 	-rm src/ast/statements/*.gch
-	-rm -r obj/*
+	-rm obj/*.o
+	-rm obj/ast/*.o
+	-rm obj/ast/expressions/*.o
+	-rm obj/ast/statements/*.o
 	-rm -r ${OUT}/lscc ${OUT}/lscc.dSYM
 	-rm -r ${OUT}/c_lexer ${OUT}/c_lexer.dSYM
 	-rm -r ${OUT}/c_parser ${OUT}/c_parser.dSYM

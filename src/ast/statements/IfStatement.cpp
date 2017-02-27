@@ -24,3 +24,12 @@ void IfStatement::Debug(std::ostream& dst, int indent) const {
 		false_body->Debug(dst, indent+2);
 	}
 }
+
+void IfStatement::PrintXML(std::ostream& dst, int indent) const {
+	if(true_body) {
+		true_body->PrintXML(dst, indent);
+	}
+	if(false_body) {
+		false_body->PrintXML(dst, indent);
+	}
+}

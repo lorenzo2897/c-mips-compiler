@@ -17,3 +17,7 @@ void Scope::merge_statements(Scope *scope) {
 }
 
 Scope::Scope() {}
+
+void Scope::Debug(std::ostream &dst, int indent) const {
+	dst << " (scope)";
+}

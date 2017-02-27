@@ -13,8 +13,9 @@ protected:
 public:
 	Node() {}
 	Node(std::string s) : debug_extras(s) {}
-	virtual void Print(std::ostream& dst, int indent) const;
-	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual void PrettyPrint(std::ostream& dst, int indent) const;
+	virtual void PrintXML(std::ostream& dst, int indent) const;
+	virtual void Debug(std::ostream& dst, int indent) const = 0;
 
 };
 

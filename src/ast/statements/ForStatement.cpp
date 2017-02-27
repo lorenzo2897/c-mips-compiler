@@ -47,3 +47,14 @@ void ForStatement::Debug(std::ostream& dst, int indent) const {
 		dst << " (null statement!)";
 	}
 }
+
+void ForStatement::PrintXML(std::ostream& dst, int indent) const {
+	dst << spaces(indent) << "<Scope>" << std::endl;
+	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
+		(*itr)->PrintXML(dst, indent+2);
+	}
+	if (body) {
+		body->PrintXML(dst, indent+2);
+	}
+	dst << spaces(indent) << "</Scope>" << std::endl;
+}

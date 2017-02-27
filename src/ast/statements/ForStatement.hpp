@@ -26,6 +26,7 @@ public:
 	void merge_declarations(Scope* scope);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual void PrintXML(std::ostream& dst, int indent) const;
 };
 
 #endif

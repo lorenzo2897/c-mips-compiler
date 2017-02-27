@@ -19,7 +19,9 @@ public:
 	int pointer_depth;
 	std::string identifier;
 	Expression* initialiser;
+	
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual void PrintXML(std::ostream& dst, int indent) const;
 };
 
 #endif

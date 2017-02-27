@@ -18,3 +18,7 @@ void WhileStatement::Debug(std::ostream& dst, int indent) const {
 		dst << " (null statement!)";
 	}
 }
+
+void WhileStatement::PrintXML(std::ostream& dst, int indent) const {
+	if(statement) statement->PrintXML(dst, indent);
+}
