@@ -51,6 +51,7 @@ for($test_num = 0; $test_num < 1000; $test_num++) {
 				$tokens[] = rand(0, 500);
 				break;
 			case 6: // string
+				break;
 				$last_token_is_keyword = false;
 				$last_token_is_number = false;
 				$tokens[] = random_c_string();
