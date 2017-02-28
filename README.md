@@ -35,6 +35,15 @@ If none specified, defaults to --compile
 
 ## Testing the compiler
 
+To run the comprehensive testing suite:
+
+```
+chmod u+x test/all.sh
+test/all.sh
+```
+
+This will test makefile, build process, lexer, parser, and code generation. It will output a summary of the test results in an HTML page at test/out/summary.html
+
 ### Checking makefile dependencies
 
 Makefile correctness can be checked by installing [make2graph](https://github.com/lindenb/makefile2graph) and running `test/makefile.sh` from the base directory.
