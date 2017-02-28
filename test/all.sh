@@ -97,6 +97,7 @@ echo "</div>" >> $HTML
 
 echo "</body>" >> $HTML
 
+echo
 echo "TEST COMPLETE"
 echo "============="
 echo "The test results are available at $HTML"
