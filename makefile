@@ -1,5 +1,5 @@
 OUT = bin
-CSOURCES = $(wildcard src/ast/*.cpp) $(wildcard src/ast/expressions/*.cpp) $(wildcard src/ast/statements/*.cpp)
+CSOURCES = $(wildcard src/ast/*.cpp) $(wildcard src/ast/expressions/*.cpp) $(wildcard src/ast/statements/*.cpp) $(wildcard src/intrep/*.cpp)
 OBJS = $(patsubst src/%.cpp,obj/%.o,$(CSOURCES)) obj/c_parser.tab.o obj/c_lexer.yy.o
 CHEADERS = src/ast/*.hpp src/ast/expressions/*.hpp src/ast/statements/*.hpp src/c_parser.tab.hpp
 GCCOPT = -g
@@ -28,6 +28,9 @@ obj/ast/expressions/%.o : src/ast/expressions/%.cpp
 obj/ast/statements/%.o : src/ast/statements/%.cpp
 	g++ $(GCCOPT) -c -o $@ $<
 
+obj/intrep/%.o : src/intrep/%.cpp
+	g++ $(GCCOPT) -c -o $@ $<
+
 # intermediate deliverables
 
 ${OUT}/c_lexer : compiler
@@ -45,10 +48,12 @@ clean :
 	-rm src/c_lexer.yy.cpp
 	-rm src/c_parser.tab.cpp
 	-rm src/c_parser.tab.hpp
+	-rm src/intrep/*.gch
 	-rm src/ast/*.gch
 	-rm src/ast/expressions/*.gch
 	-rm src/ast/statements/*.gch
 	-rm obj/*.o
+	-rm obj/intrep/*.o
 	-rm obj/ast/*.o
 	-rm obj/ast/expressions/*.o
 	-rm obj/ast/statements/*.o
@@ -57,3 +62,4 @@ clean :
 	-rm -r ${OUT}/c_parser ${OUT}/c_parser.dSYM
 	mkdir -p obj/ast/expressions
 	mkdir -p obj/ast/statements
+	mkdir -p obj/intrep
