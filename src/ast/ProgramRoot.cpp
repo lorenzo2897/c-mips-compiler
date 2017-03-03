@@ -43,3 +43,38 @@ void ProgramRoot::add(Node* node) {
 		fprintf(stderr, "warning: program root did not add item because idk what it is\n");
 	}
 }
+
+void ProgramRoot::CompileIR(std::ostream &dst) const {
+	dst << std::endl << "# MIPS assembly generated using lscc" << std::endl << std::endl;
+
+	VariableMap bindings;
+
+	// populate map with global varaibles
+	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
+		if(bindings.count((*itr)->identifier)) {
+			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
+		}
+		Binding b;
+		b.alias = (*itr)->identifier;
+		b.type = (*itr)->var_type;
+		b.is_global = true;
+		bindings[(*itr)->identifier] = b;
+	}
+
+	// populate map with function names
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		if(bindings.count((*itr)->function_name)) {
+			throw compile_error("function " + (*itr)->function_name + " conflicts with another declaration of the same name");
+		}
+		Binding b;
+		b.alias = (*itr)->function_name;
+		b.type = (*itr)->return_type;
+		b.is_global = true;
+		bindings[(*itr)->function_name] = b;
+	}
+
+	// generate code for every function
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		(*itr)->CompileIR(bindings, dst);
+	}
+}

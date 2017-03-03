@@ -1,3 +1,6 @@
+#ifndef IR_VARIABLE_MAP_H
+#define IR_VARIABLE_MAP_H
+
 #include <map>
 
 #include "Type.hpp"
@@ -9,3 +12,5 @@ struct Binding {
 };
 
 typedef std::map<std::string, Binding> VariableMap;
+
+#endif

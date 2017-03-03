@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include <sstream>
 
+#include <cstdlib>
+
 class compile_error : public std::runtime_error {
 
 private:
@@ -20,13 +22,16 @@ public:
 	}
 
 	virtual const char* what() const throw() {
-		std::stringstream s;
-		if(lineno == 0) {
-			s << "error: " << runtime_error::what();
-		} else {
-			s << "error: " << filename << ":" << lineno << ": " << runtime_error::what();
+		std::string s = "error: ";
+
+		if(lineno != 0) {
+			char buf[10];
+			sprintf(buf, "%d", lineno);
+			s += filename + ":" + buf + ": ";
 		}
 
-		return s.str().c_str();
+		s += runtime_error::what();
+
+		return s.c_str();
 	}
 };

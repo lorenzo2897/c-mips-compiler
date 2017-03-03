@@ -50,3 +50,17 @@ void Function::PrintXML(std::ostream& dst, int indent) const {
 
 	dst << spaces(indent) << "</Function>" << std::endl;
 }
+
+void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
+	std::vector<Instruction> out;
+	for(std::vector<Statement*>::const_iterator itr = statements.begin(); itr != statements.end(); ++itr) {
+		(*itr)->MakeIR(bindings, out);
+	}
+
+	dst << function_name << ":" << std::endl;
+	for(std::vector<Instruction>::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
+		(*itr).Debug(dst);
+	}
+
+	dst << std::endl;
+}

@@ -18,6 +18,8 @@ public:
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 	void add(Node* node);
+
+	virtual void CompileIR(std::ostream& dst) const;
 };
 
 #endif

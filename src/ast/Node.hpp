@@ -5,6 +5,8 @@
 #include <string>
 
 #include "../intrep/VariableMap.hpp"
+#include "../intrep/Instruction.hpp"
+#include "../intrep/UniqueNames.hpp"
 #include "../CompileError.hpp"
 
 class Node {

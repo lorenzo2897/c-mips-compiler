@@ -193,5 +193,11 @@ void print_xml_ast() {
 }
 
 void generate_mips() {
+	try {
+		dynamic_cast<ProgramRoot*>(ast_root)->CompileIR(std::cout);
+	} catch(compile_error& e) {
+		std::cout << e.what() << std::endl;
+		std::cout << "compilation terminated." << std::endl;
+	}
 
 }
