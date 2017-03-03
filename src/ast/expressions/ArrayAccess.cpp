@@ -9,3 +9,7 @@ void ArrayAccess::Debug(std::ostream& dst, int indent) const {
 	array_index->Debug(dst, indent);
 	dst << "]";
 }
+
+Type ArrayAccess::GetType(VariableMap& bindings) const {
+	return array_base->GetType(bindings).dereference();
+}

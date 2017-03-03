@@ -11,3 +11,14 @@ void TernaryExpression::Debug(std::ostream& dst, int indent) const {
 	false_branch->Debug(dst, indent);
 	dst << ")";
 }
+
+Type TernaryExpression::GetType(VariableMap& bindings) const {
+	Type a = true_branch->GetType(bindings);
+	Type b = false_branch->GetType(bindings);
+
+	if(a.equals(b)) {
+		return a;
+	} else {
+		throw compile_error("ternary expression has different types");
+	}
+}

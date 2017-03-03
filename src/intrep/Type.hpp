@@ -6,12 +6,22 @@
 
 class Type {
 
-private:
+public:
 	std::vector<std::string> specifiers;
 	int pointer_depth;
 
-public:
+	Type();
+	Type(std::string specifier, int pointer_depth);
+	Type(std::vector<std::string> specifiers, int pointer_depth);
+
+
+	std::string name() const;
 	bool is_pointer() const;
+
+	unsigned bytes() const;
+	bool equals(Type t) const;
+	bool is_compatible(Type t) const;
+
 	Type dereference() const;
 	Type addressof() const;
 

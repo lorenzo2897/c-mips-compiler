@@ -13,3 +13,7 @@ void AssignmentExpression::Debug(std::ostream& dst, int indent) const {
 	rvalue->Debug(dst, indent);
 	dst << ")";
 }
+
+Type AssignmentExpression::GetType(VariableMap& bindings) const {
+	return lvalue->GetType(bindings);
+}

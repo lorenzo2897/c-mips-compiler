@@ -7,3 +7,7 @@ void MemberAccess::Debug(std::ostream& dst, int indent) const {
 	dst << (dereference ? "->" : ".");
 	dst << member;
 }
+
+Type MemberAccess::GetType(VariableMap& bindings) const {
+	return base->GetType(bindings);
+}

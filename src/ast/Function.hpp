@@ -7,6 +7,8 @@
 #include "Node.hpp"
 #include "Scope.hpp"
 
+#include "../intrep/Type.hpp"
+
 class Function : public Scope {
 
 protected:
@@ -15,8 +17,7 @@ public:
 	Function();
 
 	std::string function_name;
-	std::vector<std::string> specifiers;
-	int pointer_depth;
+	Type return_type;
 	std::vector<Declaration*> parameters;
 
 	void merge_parameters(Scope* scope);

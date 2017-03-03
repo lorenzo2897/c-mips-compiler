@@ -14,6 +14,7 @@ public:
 	Variable(std::string id);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual Type GetType(VariableMap& bindings) const;
 
 };
 

@@ -53,3 +53,20 @@ void Value::Debug(std::ostream &dst, int indent) const {
 			break;
 	}
 }
+
+Type Value::GetType(VariableMap& bindings) const {
+	switch (type) {
+		case V_STRING:
+			return Type("char", 1);
+		case V_CHAR:
+			return Type("char", 0);
+		case V_INT:
+			return Type("int", 0);
+		case V_FLOAT:
+			return Type("float", 0);
+		case V_DOUBLE:
+			return Type("double", 0);
+		default:
+			throw compile_error("invalid type");
+	}
+}

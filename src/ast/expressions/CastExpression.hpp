@@ -5,17 +5,19 @@
 
 #include "../Expression.hpp"
 
+#include "../../intrep/Type.hpp"
+
 class CastExpression : public Expression {
 
 public:
-	std::string cast_type;
-	int pointer_depth;
+	Type cast_type;
 	Expression* rvalue;
 
 	CastExpression();
 	CastExpression(std::string cast_type, int pointer_depth, Expression* expression);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual Type GetType(VariableMap& bindings) const;
 };
 
 #endif

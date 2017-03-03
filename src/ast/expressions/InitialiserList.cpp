@@ -14,3 +14,7 @@ void InitialiserList::Debug(std::ostream& dst, int indent) const {
 	}
 	dst << "}";
 }
+
+Type InitialiserList::GetType(VariableMap& bindings) const {
+	return Type("int", 1);
+}

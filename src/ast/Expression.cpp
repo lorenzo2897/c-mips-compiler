@@ -24,3 +24,11 @@ CompoundExpression::CompoundExpression(Expression* e) {
 void CompoundExpression::add_expression(Expression *e) {
 	expressions.push_back(e);
 }
+
+Type CompoundExpression::GetType(VariableMap& bindings) const {
+	if(expressions.size() == 0) {
+		throw compile_error("getting type of empty CompoundExpression");
+	}
+
+	return expressions.at(expressions.size() - 1)->GetType(bindings);
+}

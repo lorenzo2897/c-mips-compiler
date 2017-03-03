@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 
+#include "../intrep/VariableMap.hpp"
+#include "../CompileError.hpp"
+
 class Node {
 
 protected:

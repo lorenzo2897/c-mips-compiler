@@ -6,10 +6,14 @@
 
 #include "Node.hpp"
 
+#include "../intrep/Type.hpp"
+
 class Expression : public Node {
 
 public:
 	virtual void Debug(std::ostream& dst, int indent) const;
+
+	virtual Type GetType(VariableMap& bindings) const = 0;
 
 };
 
@@ -23,6 +27,8 @@ public:
 
 	virtual void Debug(std::ostream& dst, int indent) const;
 	void add_expression(Expression* e);
+
+	virtual Type GetType(VariableMap& bindings) const;
 };
 
 #endif

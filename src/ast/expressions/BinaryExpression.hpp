@@ -36,6 +36,7 @@ public:
 	BinaryExpression(Expression* l, Expression* r, BinaryOperator op);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual Type GetType(VariableMap& bindings) const;
 };
 
 #endif

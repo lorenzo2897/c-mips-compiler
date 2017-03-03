@@ -8,6 +8,8 @@
 #include "Node.hpp"
 #include "Expression.hpp"
 
+#include "../intrep/Type.hpp"
+
 class Declaration : public Node {
 
 protected:
@@ -15,11 +17,10 @@ protected:
 public:
 	Declaration();
 
-	std::vector<std::string> specifiers;
-	int pointer_depth;
+	Type var_type;
 	std::string identifier;
 	Expression* initialiser;
-	
+
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 };

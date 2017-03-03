@@ -64,3 +64,7 @@ void BinaryExpression::Debug(std::ostream& dst, int indent) const {
 	right->Debug(dst, indent);
 	dst << ")";
 }
+
+Type BinaryExpression::GetType(VariableMap& bindings) const {
+	return left->GetType(bindings);
+}

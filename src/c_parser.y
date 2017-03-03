@@ -81,7 +81,7 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						$$ = $2;
 						// add in the specifiers for each declaration in the list
 						for(int i = 0; i < dynamic_cast<Scope*>$$->declarations.size(); i++) {
-							dynamic_cast<Scope*>$$->declarations[i]->specifiers = *$1;
+							dynamic_cast<Scope*>$$->declarations[i]->var_type.specifiers = *$1;
 						}
 					}
 					| DeclarationSpecifiers Declarator '(' ')' ';' {
@@ -96,7 +96,7 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						// function definition
 						$$ = $2;
 						// add in the specifiers for the function type
-						dynamic_cast<Function*>$$->specifiers = *$1;
+						dynamic_cast<Function*>$$->return_type.specifiers = *$1;
 					}
 
 DeclarationSpecifiers : TypeSpecifier {
@@ -151,12 +151,12 @@ Declarator : IDENTIFIER {
 			}
 			| TypeSuffix IDENTIFIER {
 				$$ = new Declaration();
-				dynamic_cast<Declaration*>$$->pointer_depth = $1;
+				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $1;
 				dynamic_cast<Declaration*>$$->identifier = $2;
 			}
 			| IDENTIFIER TypeSuffix {
 				$$ = new Declaration();
-				dynamic_cast<Declaration*>$$->pointer_depth = $2;
+				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $2;
 				dynamic_cast<Declaration*>$$->identifier = $1;
 			}
 
@@ -184,7 +184,7 @@ Function : Declarator '(' ')' CompoundStatement {
 				dynamic_cast<Function*>$$->function_name = dynamic_cast<Declaration*>$1->identifier;
 
 				// transfer the pointer depth
-				dynamic_cast<Function*>$$->pointer_depth = dynamic_cast<Declaration*>$1->pointer_depth;
+				dynamic_cast<Function*>$$->return_type.pointer_depth = dynamic_cast<Declaration*>$1->var_type.pointer_depth;
 
 				// transfer the declarations and statements from the compound statement
 				dynamic_cast<Function*>$$->merge_declarations(dynamic_cast<Scope*>$4);
@@ -197,7 +197,7 @@ Function : Declarator '(' ')' CompoundStatement {
 				dynamic_cast<Function*>$$->function_name = dynamic_cast<Declaration*>$1->identifier;
 
 				// transfer the pointer depth
-				dynamic_cast<Function*>$$->pointer_depth = dynamic_cast<Declaration*>$1->pointer_depth;
+				dynamic_cast<Function*>$$->return_type.pointer_depth = dynamic_cast<Declaration*>$1->var_type.pointer_depth;
 
 				// transfer the parameter list
 				dynamic_cast<Function*>$$->merge_parameters(dynamic_cast<Scope*>$3);
@@ -209,12 +209,12 @@ Function : Declarator '(' ')' CompoundStatement {
 
 FunctionParameterList	: DeclarationSpecifiers Declarator {
 							$$ = new Scope();
-							dynamic_cast<Declaration*>$2->specifiers = *$1;
+							dynamic_cast<Declaration*>$2->var_type.specifiers = *$1;
 							dynamic_cast<Scope*>$$->declare(dynamic_cast<Declaration*>$2);
 						}
 						| FunctionParameterList ',' DeclarationSpecifiers Declarator {
 							$$ = $1;
-							dynamic_cast<Declaration*>$4->specifiers = *$3;
+							dynamic_cast<Declaration*>$4->var_type.specifiers = *$3;
 							dynamic_cast<Scope*>$$->declare(dynamic_cast<Declaration*>$4);
 						}
 
@@ -229,7 +229,7 @@ InnerDeclarationBlock : DeclarationSpecifiers DeclarationList ';' {
 
 						  // add in the specifiers for each declaration in the list
 						  for(int i = 0; i < d->declarations.size(); i++) {
-							  d->declarations[i]->specifiers = *$1;
+							  d->declarations[i]->var_type.specifiers = *$1;
 						  }
 
 						  // set the new declarationblock to be the declaration list
@@ -241,7 +241,7 @@ InnerDeclarationBlock : DeclarationSpecifiers DeclarationList ';' {
 
 						  // set the specifiers for the new declarations
 						  for(int i = 0; i < d->declarations.size(); i++) {
-							  d->declarations[i]->specifiers = *$2;
+							  d->declarations[i]->var_type.specifiers = *$2;
 						  }
 
 						  // add the new declarations into the existing list
@@ -306,7 +306,7 @@ ForStatement	: FOR '(' ExpressionStatement ExpressionStatement ')' Statement {
 					Scope* s = dynamic_cast<Scope*>$4;
 					// add in the specifiers for each declaration in the list
 					for(int i = 0; i < s->declarations.size(); i++) {
-						s->declarations[i]->specifiers = *$3;
+						s->declarations[i]->var_type.specifiers = *$3;
 					}
 					dynamic_cast<ForStatement*>$$->merge_declarations(s);
 				}
@@ -315,7 +315,7 @@ ForStatement	: FOR '(' ExpressionStatement ExpressionStatement ')' Statement {
 					Scope* s = dynamic_cast<Scope*>$4;
 					// add in the specifiers for each declaration in the list
 					for(int i = 0; i < s->declarations.size(); i++) {
-						s->declarations[i]->specifiers = *$3;
+						s->declarations[i]->var_type.specifiers = *$3;
 					}
 					dynamic_cast<ForStatement*>$$->merge_declarations(s);
 				}

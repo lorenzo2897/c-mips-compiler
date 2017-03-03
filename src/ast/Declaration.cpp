@@ -1,17 +1,12 @@
 #include "Declaration.hpp"
 
-Declaration::Declaration() : pointer_depth(0), initialiser(NULL) {}
+Declaration::Declaration() : initialiser(NULL) {}
 
 void Declaration::Debug(std::ostream& dst, int indent) const {
 	dst << std::endl << spaces(indent) << "Declaration : " << identifier;
 
-	dst << std::endl << spaces(indent) << "  Specifiers:";
-	for(std::vector<std::string>::const_iterator itr = specifiers.begin(); itr != specifiers.end(); ++itr) {
-		dst << " " << (*itr);
-	}
-	for(int i = 0; i < pointer_depth; ++i) {
-		dst << " *";
-	}
+	dst << std::endl << spaces(indent) << "  Specifiers: ";
+	dst << var_type.name();
 	dst << std::endl << spaces(indent);
 
 	if(initialiser) {

@@ -37,6 +37,7 @@ public:
 	Value(char c);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+	virtual Type GetType(VariableMap& bindings) const;
 };
 
 #endif

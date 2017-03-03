@@ -30,3 +30,5 @@
 
 #include "ast/Variable.hpp"
 #include "ast/Value.hpp"
+
+#include "intrep/Type.hpp"

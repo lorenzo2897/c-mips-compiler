@@ -8,12 +8,7 @@ void Function::merge_parameters(Scope *scope) {
 
 void Function::Debug(std::ostream& dst, int indent) const {
 	dst << std::endl << spaces(indent) << "Function (" << function_name << ") type:";
-	for(std::vector<std::string>::const_iterator itr = specifiers.begin(); itr != specifiers.end(); ++itr) {
-		dst << " " << (*itr);
-	}
-	for(int i = 0; i < pointer_depth; ++i) {
-		dst << " *";
-	}
+	dst << return_type.name();
 
 	dst << std::endl << spaces(indent) << "Parameters:" << std::endl;
 	for(std::vector<Declaration*>::const_iterator itr = parameters.begin(); itr != parameters.end(); ++itr) {
