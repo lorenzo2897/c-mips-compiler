@@ -58,3 +58,7 @@ void ForStatement::PrintXML(std::ostream& dst, int indent) const {
 	}
 	dst << spaces(indent) << "</Scope>" << std::endl;
 }
+
+void ForStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error("assembly generation not implemented for this statement", sourceFile, sourceLine);
+}

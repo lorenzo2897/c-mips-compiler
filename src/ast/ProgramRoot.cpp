@@ -86,3 +86,8 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		(*itr)->CompileIR(bindings, dst);
 	}
 }
+
+
+void ProgramRoot::CompileMIPS(std::ostream &dst) const {
+	dst << std::endl << "# MIPS assembly generated using lscc" << std::endl << std::endl;
+}

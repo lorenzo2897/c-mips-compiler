@@ -20,6 +20,7 @@
 #define MODE_JSON 2
 #define MODE_PARSE 3
 #define MODE_AST 4
+#define MODE_IR 5
 
 /* lexer functions */
 void print_tokens();
@@ -36,6 +37,7 @@ void print_version();
 void print_help();
 void debug_ast();
 void print_xml_ast();
+void generate_ir();
 void generate_mips();
 
 /* Will be written to by yyparse */
@@ -43,7 +45,7 @@ Node* ast_root;
 
 int main(int argc, char const *argv[]) {
 	// parse command-line arguments
-	int mode = MODE_COMPILE;
+	int mode = MODE_IR;
 	std::string infile;
 	std::string outfile;
 	yydebug = 0;
@@ -57,6 +59,8 @@ int main(int argc, char const *argv[]) {
 			mode = MODE_JSON;
 		} else if(has_suffix(binaryname, "c_parser")) {
 			mode = MODE_PARSE;
+		} else if(has_suffix(binaryname, "c_compiler")) {
+			mode = MODE_COMPILE;
 		}
 	#endif
 
@@ -81,6 +85,8 @@ int main(int argc, char const *argv[]) {
 			mode = MODE_AST;
 		} else if(strcmp(argv[i], "--compile") == 0 || strcmp(argv[i], "-S") == 0) {
 			mode = MODE_COMPILE;
+		} else if(strcmp(argv[i], "--ir") == 0 || strcmp(argv[i], "-i") == 0) {
+			mode = MODE_IR;
 
 		} else if(strcmp(argv[i], "-o") == 0) {
 			if(i + 1 < argc) {
@@ -147,6 +153,10 @@ int main(int argc, char const *argv[]) {
 			yyparse();
 			generate_mips();
 			break;
+		case MODE_IR:
+			yyparse();
+			generate_ir();
+			break;
 		default:
 			std::cerr << "Error: unknown mode of operation " << mode << std::endl;
 			return 1;
@@ -192,10 +202,22 @@ void print_xml_ast() {
 	ast_root->PrintXML(std::cout, 0);
 }
 
-void generate_mips() {
+void generate_ir() {
 	try {
 		std::stringstream ss;
 		dynamic_cast<ProgramRoot*>(ast_root)->CompileIR(ss);
+		fprintf(yyout, "%s", ss.str().c_str());
+	} catch(compile_error& e) {
+		std::cerr << e.what() << std::endl;
+		std::cerr << "compilation terminated." << std::endl;
+	}
+
+}
+
+void generate_mips() {
+	try {
+		std::stringstream ss;
+		dynamic_cast<ProgramRoot*>(ast_root)->CompileMIPS(ss);
 		fprintf(yyout, "%s", ss.str().c_str());
 	} catch(compile_error& e) {
 		std::cerr << e.what() << std::endl;

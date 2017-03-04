@@ -19,7 +19,8 @@ public:
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 	void add(Node* node);
 
-	virtual void CompileIR(std::ostream& dst) const;
+	void CompileIR(std::ostream& dst) const;
+	void CompileMIPS(std::ostream& dst) const;
 };
 
 #endif

@@ -20,7 +20,7 @@ public:
 
 	virtual void Debug(std::ostream& dst, int indent) const;
 
-	virtual void MakeIR(VariableMap const& bindings, std::map<std::string, Type>& stack, std::vector<Instruction>& out) const;
+	virtual void MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 #endif

@@ -39,6 +39,9 @@ ${OUT}/c_lexer : compiler
 ${OUT}/c_parser : compiler
 	g++ ${GCCOPT} -Dprogram_mode=MODE_PARSE ${OBJS} src/main.cpp -o ${OUT}/c_parser
 
+${OUT}/c_compiler : compiler
+	g++ ${GCCOPT} -Dprogram_mode=MODE_COMPILE ${OBJS} src/main.cpp -o ${OUT}/c_compiler
+
 
 # maintenance commands
 

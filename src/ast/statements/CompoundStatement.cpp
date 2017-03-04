@@ -43,3 +43,15 @@ void CompoundStatement::PrintXML(std::ostream& dst, int indent) const {
 	}
 	dst << spaces(indent) << "</Scope>" << std::endl;
 }
+
+void CompoundStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	// add bindings and stack entries for my declarations
+	VariableMap sub_bindings = bindings;
+	sub_bindings.add_bindings(scope->declarations);
+	stack.add_variables(sub_bindings, scope->declarations);
+
+	// recurse into my own list of statements
+	for(std::vector<Statement*>::const_iterator itr = scope->statements.begin(); itr != scope->statements.end(); ++itr) {
+		(*itr)->MakeIR(sub_bindings, stack, out);
+	}
+}

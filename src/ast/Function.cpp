@@ -53,7 +53,7 @@ void Function::PrintXML(std::ostream& dst, int indent) const {
 
 void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 	FunctionStack stack;
-	std::vector<Instruction> out;
+	IRVector out;
 
 	// populate the bindings with the function parameters and declarations
 	bindings.add_bindings(parameters);
@@ -61,20 +61,22 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 	bindings.add_bindings(declarations);
 	stack.add_variables(bindings, declarations);
 
+	// generate instructions from statements
 	for(std::vector<Statement*>::const_iterator itr = statements.begin(); itr != statements.end(); ++itr) {
 		(*itr)->MakeIR(bindings, stack, out);
 	}
 
 	// print IR in text form
-
 	dst << function_name << ":" << std::endl;
+
 	dst << "    # stack" << std::endl;
 	for(FunctionStack::const_iterator itr = stack.begin(); itr != stack.end(); ++itr) {
 		dst << "    " << (*itr).first << " (" << (*itr).second.bytes() << ") " << (*itr).second.name() << std::endl;
 	}
+
 	dst << "    # code" << std::endl;
-	for(std::vector<Instruction>::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
-		(*itr).Debug(dst);
+	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
+		(*itr)->Debug(dst);
 	}
 
 	dst << "    # end " << function_name << std::endl;
