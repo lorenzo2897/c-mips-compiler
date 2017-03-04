@@ -50,4 +50,6 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
+// *******************************************
+
 #endif

@@ -54,11 +54,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		if(bindings.count((*itr)->identifier)) {
 			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
 		}
-		Binding b;
-		b.alias = (*itr)->identifier;
-		b.type = (*itr)->var_type;
-		b.is_global = true;
-		bindings[(*itr)->identifier] = b;
+		bindings[(*itr)->identifier] = Binding((*itr)->identifier, (*itr)->var_type, true);
 	}
 
 	// generate labels for variables
@@ -72,16 +68,17 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		if(bindings.count((*itr)->function_name)) {
 			throw compile_error("function " + (*itr)->function_name + " conflicts with another declaration of the same name");
 		}
-		Binding b;
-		b.alias = (*itr)->function_name;
-		b.type = (*itr)->return_type;
-		b.is_global = true;
-		bindings[(*itr)->function_name] = b;
+		// build a list of function parameters
+		std::vector<Type> params;
+		for(std::vector<Declaration*>::const_iterator p = (*itr)->parameters.begin(); p != (*itr)->parameters.end(); ++p) {
+			params.push_back((*p)->var_type);
+		}
+		bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
 	}
 
+	// generate code for every function
 	dst << std::endl;
 	dst << "# Functions" << std::endl << std::endl;
-	// generate code for every function
 	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
 		(*itr)->CompileIR(bindings, dst);
 	}
