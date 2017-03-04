@@ -87,16 +87,16 @@ int main(int argc, char const *argv[]) {
 				if(argv[i+1][0] != '-') {
 					outfile = argv[++i]; // store outfile and skip the next argv
 				} else {
-					std::cout << "Invalid: -o is missing file argument" << std::endl;
+					std::cerr << "Invalid: -o is missing file argument" << std::endl;
 					return 1;
 				}
 			} else {
-				std::cout << "Invalid: -o is missing file argument" << std::endl;
+				std::cerr << "Invalid: -o is missing file argument" << std::endl;
 				return 1;
 			}
 
 		} else if(argv[i][0] == '-') {
-			std::cout << "Invalid option: " << argv[i] << std::endl;
+			std::cerr << "Invalid option: " << argv[i] << std::endl;
 			return 1;
 
 		} else { // must be infile
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
 		if((fh = fopen(infile.c_str(), "r"))) {
 			yyin = fh;
 		} else {
-			std::cout << "Error: input file \"" << infile << "\" could not be opened." << std::endl;
+			std::cerr << "Error: input file \"" << infile << "\" could not be opened." << std::endl;
 			return 1;
 		}
 	}
@@ -119,7 +119,7 @@ int main(int argc, char const *argv[]) {
 		if((fh = fopen(outfile.c_str(), "w"))) {
 			yyout = fh;
 		} else {
-			std::cout << "Error: output file \"" << outfile << "\" could not be opened." << std::endl;
+			std::cerr << "Error: output file \"" << outfile << "\" could not be opened." << std::endl;
 			return 1;
 		}
 	}
@@ -148,7 +148,7 @@ int main(int argc, char const *argv[]) {
 			generate_mips();
 			break;
 		default:
-			std::cout << "Error: unknown mode of operation " << mode << std::endl;
+			std::cerr << "Error: unknown mode of operation " << mode << std::endl;
 			return 1;
 	}
 
@@ -194,10 +194,12 @@ void print_xml_ast() {
 
 void generate_mips() {
 	try {
-		dynamic_cast<ProgramRoot*>(ast_root)->CompileIR(std::cout);
+		std::stringstream ss;
+		dynamic_cast<ProgramRoot*>(ast_root)->CompileIR(ss);
+		fprintf(yyout, "%s", ss.str().c_str());
 	} catch(compile_error& e) {
-		std::cout << e.what() << std::endl;
-		std::cout << "compilation terminated." << std::endl;
+		std::cerr << e.what() << std::endl;
+		std::cerr << "compilation terminated." << std::endl;
 	}
 
 }

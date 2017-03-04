@@ -45,7 +45,7 @@ void ProgramRoot::add(Node* node) {
 }
 
 void ProgramRoot::CompileIR(std::ostream &dst) const {
-	dst << std::endl << "# MIPS assembly generated using lscc" << std::endl << std::endl;
+	dst << std::endl << "# Intermediate representation generated using lscc" << std::endl << std::endl;
 
 	VariableMap bindings;
 
@@ -61,6 +61,12 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		bindings[(*itr)->identifier] = b;
 	}
 
+	// generate labels for variables
+	dst << "# Global variables" << std::endl;
+	for(VariableMap::const_iterator itr = bindings.begin(); itr != bindings.end(); ++itr) {
+		dst << (*itr).first << ": (" << (*itr).second.type.bytes() << ") " << (*itr).second.type.name() << std::endl;
+	}
+
 	// populate map with function names
 	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
 		if(bindings.count((*itr)->function_name)) {
@@ -73,6 +79,8 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		bindings[(*itr)->function_name] = b;
 	}
 
+	dst << std::endl;
+	dst << "# Functions" << std::endl << std::endl;
 	// generate code for every function
 	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
 		(*itr)->CompileIR(bindings, dst);

@@ -8,8 +8,6 @@
 #include "Node.hpp"
 #include "Expression.hpp"
 
-#include "../intrep/Type.hpp"
-
 class Declaration : public Node {
 
 protected:
