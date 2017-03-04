@@ -10,6 +10,6 @@ void ArrayAccess::Debug(std::ostream& dst, int indent) const {
 	dst << "]";
 }
 
-Type ArrayAccess::GetType(VariableMap& bindings) const {
+Type ArrayAccess::GetType(VariableMap const& bindings) const {
 	return array_base->GetType(bindings).dereference();
 }

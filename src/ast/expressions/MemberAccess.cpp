@@ -8,6 +8,6 @@ void MemberAccess::Debug(std::ostream& dst, int indent) const {
 	dst << member;
 }
 
-Type MemberAccess::GetType(VariableMap& bindings) const {
+Type MemberAccess::GetType(VariableMap const& bindings) const {
 	return base->GetType(bindings);
 }

@@ -14,6 +14,6 @@ void AssignmentExpression::Debug(std::ostream& dst, int indent) const {
 	dst << ")";
 }
 
-Type AssignmentExpression::GetType(VariableMap& bindings) const {
+Type AssignmentExpression::GetType(VariableMap const& bindings) const {
 	return lvalue->GetType(bindings);
 }

@@ -8,5 +8,5 @@ void Statement::Debug(std::ostream& dst, int indent) const {
 }
 
 void Statement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	throw compile_error("assembly generation not implemented for this statement", sourceFile, sourceLine);
+	throw compile_error((std::string)"assembly generation not implemented for " + typeid(*this).name(), sourceFile, sourceLine);
 }

@@ -190,6 +190,7 @@ void print_help() {
 	std::cout << "  --json           Tokenise the input, format as JSON\n\n";
 	std::cout << "  --ast            Parse the input into AST, format as text\n\n";
 	std::cout << "  --parse, --xml   Parse the input into AST, format as XML\n\n";
+	std::cout << "  -i, --ir         Compile the C code into an interm. rep.\n\n";
 	std::cout << "  -S, --compile    Compile the C code into MIPS assembly\n\n";
 	std::cout << "\nIf none specified, defaults to --compile" << std::endl << std::endl;
 }

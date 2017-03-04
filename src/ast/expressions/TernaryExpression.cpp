@@ -12,7 +12,7 @@ void TernaryExpression::Debug(std::ostream& dst, int indent) const {
 	dst << ")";
 }
 
-Type TernaryExpression::GetType(VariableMap& bindings) const {
+Type TernaryExpression::GetType(VariableMap const& bindings) const {
 	Type a = true_branch->GetType(bindings);
 	Type b = false_branch->GetType(bindings);
 

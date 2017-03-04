@@ -8,13 +8,23 @@
 
 #include "../intrep/Type.hpp"
 
+extern int currentSourceLine;
+extern std::string currentSourceFile;
+
 class Expression : public Node {
+
+protected:
+
+	int sourceLine;
+	std::string sourceFile;
+	Expression();
 
 public:
 	virtual void Debug(std::ostream& dst, int indent) const;
 
-	virtual Type GetType(VariableMap& bindings) const = 0;
+	virtual Type GetType(VariableMap const& bindings) const = 0;
 
+	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 /* ************************* */
@@ -28,7 +38,9 @@ public:
 	virtual void Debug(std::ostream& dst, int indent) const;
 	void add_expression(Expression* e);
 
-	virtual Type GetType(VariableMap& bindings) const;
+	virtual Type GetType(VariableMap const& bindings) const;
+
+	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 #endif

@@ -61,6 +61,18 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 	bindings.add_bindings(declarations);
 	stack.add_variables(bindings, declarations);
 
+	// TODO: bring parameters onto the stack
+
+	// generate instructions for initialisers
+	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
+		if((*itr)->initialiser) {
+			std::string src = (*itr)->initialiser->MakeIR(bindings, stack, out);
+			std::string dst = bindings.at((*itr)->identifier).alias;
+			out.push_back(new AssignInstruction(dst, src));
+		}
+
+	}
+
 	// generate instructions from statements
 	for(std::vector<Statement*>::const_iterator itr = statements.begin(); itr != statements.end(); ++itr) {
 		(*itr)->MakeIR(bindings, stack, out);

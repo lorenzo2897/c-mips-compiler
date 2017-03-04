@@ -72,7 +72,7 @@ void UnaryExpression::Debug(std::ostream& dst, int indent) const {
 	}
 }
 
-Type UnaryExpression::GetType(VariableMap& bindings) const {
+Type UnaryExpression::GetType(VariableMap const& bindings) const {
 	if(op == op_sizeof) {
 		return Type("int", 0);
 	} else {

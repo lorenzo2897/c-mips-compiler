@@ -14,7 +14,9 @@ public:
 	Variable(std::string id);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
-	virtual Type GetType(VariableMap& bindings) const;
+	virtual Type GetType(VariableMap const& bindings) const;
+
+	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 
 };
 

@@ -36,3 +36,36 @@ GotoInstruction::GotoInstruction(std::string name) : label_name(name) {}
 void GotoInstruction::Debug(std::ostream &dst) const {
 	dst << "    goto lbl_" << label_name << std::endl;
 }
+
+// *******************************************
+
+ReturnInstruction::ReturnInstruction(std::string return_variable) : return_variable(return_variable) {}
+
+void ReturnInstruction::Debug(std::ostream &dst) const {
+	dst << "    return " << return_variable << std::endl;
+}
+
+// *******************************************
+
+ConstantInstruction::ConstantInstruction(std::string destination, Type type, uint32_t dataLo, uint32_t dataHi)
+: destination(destination), type(type), dataLo(dataLo), dataHi(dataHi) {}
+
+void ConstantInstruction::Debug(std::ostream &dst) const {
+	dst << "    constant " << destination << " " << dataHi << " " << dataLo << std::endl;
+}
+
+StringInstruction::StringInstruction(std::string destination, std::string data)
+: destination(destination), data(data) {}
+
+void StringInstruction::Debug(std::ostream &dst) const {
+	dst << "    ascii " << destination << " " << data << std::endl;
+}
+
+// *******************************************
+
+AssignInstruction::AssignInstruction(std::string destination, std::string source)
+: destination(destination), source(source) {}
+
+void AssignInstruction::Debug(std::ostream &dst) const {
+	dst << "    move " << destination << ", " << source << std::endl;
+}

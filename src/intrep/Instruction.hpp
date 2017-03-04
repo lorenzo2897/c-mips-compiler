@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+#include "Type.hpp"
+
 // *******************************************
 
 class Instruction {
@@ -51,5 +53,46 @@ public:
 };
 
 // *******************************************
+
+class ReturnInstruction : public Instruction {
+private:
+	std::string return_variable;
+public:
+	ReturnInstruction(std::string return_variable);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class ConstantInstruction : public Instruction {
+private:
+	std::string destination;
+	Type type;
+	uint32_t dataLo;
+	uint32_t dataHi;
+public:
+	ConstantInstruction(std::string destination, Type type, uint32_t dataLo, uint32_t dataHi = 0);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+class StringInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string data;
+public:
+	StringInstruction(std::string destination, std::string data);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class AssignInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+public:
+	AssignInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
 
 #endif

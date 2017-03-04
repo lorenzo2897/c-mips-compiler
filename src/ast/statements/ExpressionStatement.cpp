@@ -14,3 +14,9 @@ void ExpressionStatement::Debug(std::ostream& dst, int indent) const {
 		dst << "null expression";
 	}
 }
+
+void ExpressionStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	if(expression) {
+		expression->MakeIR(bindings, stack, out);
+	}
+}

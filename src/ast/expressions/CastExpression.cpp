@@ -16,6 +16,6 @@ void CastExpression::Debug(std::ostream& dst, int indent) const {
 	dst << ")";
 }
 
-Type CastExpression::GetType(VariableMap& bindings) const {
+Type CastExpression::GetType(VariableMap const& bindings) const {
 	return cast_type;
 }

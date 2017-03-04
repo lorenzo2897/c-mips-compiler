@@ -15,6 +15,6 @@ void InitialiserList::Debug(std::ostream& dst, int indent) const {
 	dst << "}";
 }
 
-Type InitialiserList::GetType(VariableMap& bindings) const {
+Type InitialiserList::GetType(VariableMap const& bindings) const {
 	return Type("int", 1);
 }

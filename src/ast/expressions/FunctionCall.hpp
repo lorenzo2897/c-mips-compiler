@@ -15,7 +15,7 @@ public:
 	FunctionCall(std::string function_name, std::vector<Expression*> args);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
-	virtual Type GetType(VariableMap& bindings) const;
+	virtual Type GetType(VariableMap const& bindings) const;
 };
 
 #endif

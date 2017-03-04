@@ -27,6 +27,8 @@ OPTIONS:
 
   --parse          Parse the input into AST, format as XML
 
+  -i, --ir         Compile the C code into an interm. rep.
+
   -S, --compile    Compile the C code into MIPS assembly
 
 

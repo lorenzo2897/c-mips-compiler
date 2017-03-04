@@ -50,6 +50,16 @@ void CompoundStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack
 	sub_bindings.add_bindings(scope->declarations);
 	stack.add_variables(sub_bindings, scope->declarations);
 
+	// generate instructions for initialisers
+	for(std::vector<Declaration*>::const_iterator itr = scope->declarations.begin(); itr != scope->declarations.end(); ++itr) {
+		if((*itr)->initialiser) {
+			std::string src = (*itr)->initialiser->MakeIR(bindings, stack, out);
+			std::string dst = bindings.at((*itr)->identifier).alias;
+			out.push_back(new AssignInstruction(dst, src));
+		}
+
+	}
+
 	// recurse into my own list of statements
 	for(std::vector<Statement*>::const_iterator itr = scope->statements.begin(); itr != scope->statements.end(); ++itr) {
 		(*itr)->MakeIR(sub_bindings, stack, out);

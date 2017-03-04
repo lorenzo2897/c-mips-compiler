@@ -20,7 +20,7 @@ void VariableMap::add_bindings(std::vector<Declaration*> const& declarations) {
 	// add all of the declarations, shadowing any previous version
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
 		Binding b(
-			unique("var_" + (*itr)->identifier),
+			unique("var_" + (*itr)->identifier + "_"),
 			(*itr)->var_type,
 			false
 		);

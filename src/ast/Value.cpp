@@ -54,7 +54,7 @@ void Value::Debug(std::ostream &dst, int indent) const {
 	}
 }
 
-Type Value::GetType(VariableMap& bindings) const {
+Type Value::GetType(VariableMap const& bindings) const {
 	switch (type) {
 		case V_STRING:
 			return Type("char", 1);
@@ -66,6 +66,57 @@ Type Value::GetType(VariableMap& bindings) const {
 			return Type("float", 0);
 		case V_DOUBLE:
 			return Type("double", 0);
+		default:
+			throw compile_error("invalid type");
+	}
+}
+
+uint32_t reinterpret(char x) {
+	return x;
+}
+uint32_t reinterpret(unsigned int x) {
+	return x;
+}
+uint32_t reinterpret(float x) {
+	return *((uint32_t*) &x);
+}
+uint32_t reinterpret_lo(double x) {
+	uint64_t i = *((uint64_t*) &x);
+	return (uint32_t) i;
+}
+uint32_t reinterpret_hi(double x) {
+	uint64_t i = *((uint64_t*) &x);
+	return (uint32_t) (i >> 32);
+}
+
+std::string Value::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	std::string name;
+	switch (type) {
+		case V_STRING:
+			name = unique("string");
+			stack[name] = GetType(bindings);
+			out.push_back(new StringInstruction(name, strval));
+			return name;
+		case V_CHAR:
+			name = unique("char");
+			stack[name] = GetType(bindings);
+			out.push_back(new ConstantInstruction(name, GetType(bindings), reinterpret(val.c)));
+			return name;
+		case V_INT:
+			name = unique("int");
+			stack[name] = GetType(bindings);
+			out.push_back(new ConstantInstruction(name, GetType(bindings), reinterpret(val.i)));
+			return name;
+		case V_FLOAT:
+			name = unique("float");
+			stack[name] = GetType(bindings);
+			out.push_back(new ConstantInstruction(name, GetType(bindings), reinterpret(val.f)));
+			return name;
+		case V_DOUBLE:
+			name = unique("double");
+			stack[name] = GetType(bindings);
+			out.push_back(new ConstantInstruction(name, GetType(bindings), reinterpret_lo(val.d), reinterpret_hi(val.d)));
+			return name;
 		default:
 			throw compile_error("invalid type");
 	}

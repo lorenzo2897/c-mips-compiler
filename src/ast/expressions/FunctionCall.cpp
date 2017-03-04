@@ -14,7 +14,7 @@ void FunctionCall::Debug(std::ostream& dst, int indent) const {
 	dst << ")";
 }
 
-Type FunctionCall::GetType(VariableMap& bindings) const {
+Type FunctionCall::GetType(VariableMap const& bindings) const {
 	if(bindings.count(function_name)) {
 		return bindings.at(function_name).type;
 	} else {
