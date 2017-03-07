@@ -1,5 +1,7 @@
 #include "Statement.hpp"
 
+#include <typeinfo>
+
 Statement::Statement() : sourceLine(currentSourceLine), sourceFile(currentSourceFile) {
 }
 
