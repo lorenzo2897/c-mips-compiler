@@ -1,5 +1,7 @@
 #include "Expression.hpp"
 
+#include <typeinfo>
+
 Expression::Expression() : sourceFile(currentSourceFile), sourceLine(currentSourceLine) {}
 
 void Expression::Debug(std::ostream& dst, int indent) const {

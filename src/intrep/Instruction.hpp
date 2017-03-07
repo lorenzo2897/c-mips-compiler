@@ -4,8 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-
-#include <cstdint>
+#include <stdint.h>
 
 #include "Type.hpp"
 

@@ -2,6 +2,7 @@
 #define AST_VALUE_H
 
 #include <iostream>
+#include <stdint.h>
 
 #include "Node.hpp"
 #include "Expression.hpp"

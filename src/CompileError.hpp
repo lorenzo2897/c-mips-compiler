@@ -1,6 +1,6 @@
 #include <stdexcept>
 #include <sstream>
-
+#include <cstdio>
 #include <cstdlib>
 
 class compile_error : public std::runtime_error {
