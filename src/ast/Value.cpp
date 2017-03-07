@@ -1,5 +1,7 @@
 #include "Value.hpp"
 
+#include <cstdint>
+
 Value::Value(std::string s) {
 	type = V_STRING;
 	strval = s;
