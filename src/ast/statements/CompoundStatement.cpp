@@ -54,7 +54,9 @@ void CompoundStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack
 	for(std::vector<Declaration*>::const_iterator itr = scope->declarations.begin(); itr != scope->declarations.end(); ++itr) {
 		if((*itr)->initialiser) {
 			std::string src = (*itr)->initialiser->MakeIR(sub_bindings, stack, out);
-			std::string dst = sub_bindings.at((*itr)->identifier).alias;
+			std::string dst = unique((std::string)"addr_" + (*itr)->identifier + "_");
+			stack[dst] = sub_bindings.at((*itr)->identifier).type.addressof();
+			out.push_back(new AddressOfInstruction(dst, sub_bindings.at((*itr)->identifier).alias));
 			out.push_back(new AssignInstruction(dst, src));
 		}
 

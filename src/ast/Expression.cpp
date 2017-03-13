@@ -12,6 +12,10 @@ std::string Expression::MakeIR(VariableMap const& bindings, FunctionStack& stack
 	throw compile_error((std::string)"assembly generation not implemented for " + typeid(*this).name());
 }
 
+std::string Expression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error((std::string)"l-value assembly generation not implemented for " + typeid(*this).name());
+}
+
 /* ************************************************* */
 
 void CompoundExpression::Debug(std::ostream& dst, int indent) const {
@@ -48,4 +52,8 @@ std::string CompoundExpression::MakeIR(VariableMap const& bindings, FunctionStac
 		res = (*itr)->MakeIR(bindings, stack, out);
 	}
 	return res;
+}
+
+std::string CompoundExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error((std::string)"cannot use a compound expression as an l-value");
 }

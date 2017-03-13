@@ -75,11 +75,36 @@ void UnaryExpression::Debug(std::ostream& dst, int indent) const {
 Type UnaryExpression::GetType(VariableMap const& bindings) const {
 	if(op == op_sizeof) {
 		return Type("int", 0);
+	} else if(op == op_addressof) {
+		return expression->GetType(bindings).addressof();
+	} else if(op == op_dereference) {
+		return expression->GetType(bindings).dereference();
 	} else {
 		return expression->GetType(bindings);
 	}
 }
 
-std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	
+std::string UnaryExpression::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	if(op == op_addressof) {
+		return expression->MakeIR_lvalue(bindings, stack, out);
+	} else if(op == op_dereference) {
+		std::string s = expression->MakeIR(bindings, stack, out);
+		std::string r = unique("deref");
+		stack[r] = expression->GetType(bindings).dereference();
+		out.push_back(new DereferenceInstruction(r, s));
+		return r;
+	} else {
+		// TODO: implement unary expressions
+		throw compile_error("UnaryExpression operator not implemented");
+	}
+}
+
+std::string UnaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	if(op == op_addressof) {
+		throw compile_error("a memory address is not an l-value");
+	} else if(op == op_dereference) {
+		return expression->MakeIR(bindings, stack, out);
+	} else {
+		throw compile_error("cannot use unary operators within an l-value");
+	}
 }

@@ -63,9 +63,32 @@ void StringInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
+MoveInstruction::MoveInstruction(std::string destination, std::string source)
+: destination(destination), source(source) {}
+
+void MoveInstruction::Debug(std::ostream &dst) const {
+	dst << "    move " << destination << ", " << source << std::endl;
+}
+
 AssignInstruction::AssignInstruction(std::string destination, std::string source)
 : destination(destination), source(source) {}
 
 void AssignInstruction::Debug(std::ostream &dst) const {
-	dst << "    move " << destination << ", " << source << std::endl;
+	dst << "    assign *" << destination << ", " << source << std::endl;
+}
+
+// *******************************************
+
+AddressOfInstruction::AddressOfInstruction(std::string destination, std::string source)
+: destination(destination), source(source) {}
+
+void AddressOfInstruction::Debug(std::ostream &dst) const {
+	dst << "    addressOf " << destination << ", &" << source << std::endl;
+}
+
+DereferenceInstruction::DereferenceInstruction(std::string destination, std::string source)
+: destination(destination), source(source) {}
+
+void DereferenceInstruction::Debug(std::ostream &dst) const {
+	dst << "    dereference " << destination << ", *" << source << std::endl;
 }

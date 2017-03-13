@@ -27,3 +27,11 @@ std::string Variable::MakeIR(VariableMap const& bindings, FunctionStack& stack, 
 		throw compile_error("variable " + identifier + " was not found in this scope", sourceFile, sourceLine);
 	}
 }
+
+std::string Variable::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	std::string s = MakeIR(bindings, stack, out);
+	std::string r = unique((std::string)"addr_" + identifier + "_");
+	stack[r] = GetType(bindings).addressof();
+	out.push_back(new AddressOfInstruction(r, s));
+	return r;
+}

@@ -87,12 +87,41 @@ public:
 
 // *******************************************
 
+class MoveInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+public:
+	MoveInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
 class AssignInstruction : public Instruction {
 private:
 	std::string destination;
 	std::string source;
 public:
 	AssignInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class AddressOfInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+public:
+	AddressOfInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+class DereferenceInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+public:
+	DereferenceInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
 };
 

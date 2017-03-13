@@ -25,6 +25,7 @@ public:
 	virtual Type GetType(VariableMap const& bindings) const = 0;
 
 	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
+	virtual std::string MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 /* ************************* */
@@ -41,6 +42,7 @@ public:
 	virtual Type GetType(VariableMap const& bindings) const;
 
 	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
+	virtual std::string MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 #endif
