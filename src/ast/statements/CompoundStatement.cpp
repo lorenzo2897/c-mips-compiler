@@ -53,8 +53,8 @@ void CompoundStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack
 	// generate instructions for initialisers
 	for(std::vector<Declaration*>::const_iterator itr = scope->declarations.begin(); itr != scope->declarations.end(); ++itr) {
 		if((*itr)->initialiser) {
-			std::string src = (*itr)->initialiser->MakeIR(bindings, stack, out);
-			std::string dst = bindings.at((*itr)->identifier).alias;
+			std::string src = (*itr)->initialiser->MakeIR(sub_bindings, stack, out);
+			std::string dst = sub_bindings.at((*itr)->identifier).alias;
 			out.push_back(new AssignInstruction(dst, src));
 		}
 

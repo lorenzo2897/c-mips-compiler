@@ -18,7 +18,11 @@ Type Variable::GetType(VariableMap const& bindings) const {
 
 std::string Variable::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
 	if(bindings.count(identifier)) {
-		return bindings.at(identifier).alias;
+		if(bindings.at(identifier).is_function) {
+			throw compile_error("identifier " + identifier + " is a function, not a variable", sourceFile, sourceLine);
+		} else {
+			return bindings.at(identifier).alias;
+		}
 	} else {
 		throw compile_error("variable " + identifier + " was not found in this scope", sourceFile, sourceLine);
 	}

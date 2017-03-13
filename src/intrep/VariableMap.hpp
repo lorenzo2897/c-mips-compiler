@@ -18,7 +18,7 @@ struct Binding {
 	: alias(alias), type(type), is_global(is_global), is_function(false) {
 	}
 
-	Binding(std::string alias, Type type, std::vector<Type> params)
+	Binding(std::string alias, Type type, std::vector<Type> const& params)
 	: alias(alias), type(type), is_global(true), is_function(true) {
 		this->params = params;
 	}

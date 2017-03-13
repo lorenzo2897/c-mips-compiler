@@ -79,3 +79,7 @@ Type UnaryExpression::GetType(VariableMap const& bindings) const {
 		return expression->GetType(bindings);
 	}
 }
+
+std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	
+}
