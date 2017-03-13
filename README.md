@@ -1,5 +1,17 @@
 # lscc : the langproc coursework C compiler
 
+## Building the compiler
+
+Any of the commands below will build the compiler. All executables contain the full functionality, but the default mode of operation depends on the binary that was built.
+
+```
+make all
+make bin/c_lexer
+make bin/c_parser
+make bin/c_compiler
+make compiler
+```
+
 ## Compiler command-line options
 
 ```
