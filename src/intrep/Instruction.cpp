@@ -92,3 +92,48 @@ DereferenceInstruction::DereferenceInstruction(std::string destination, std::str
 void DereferenceInstruction::Debug(std::ostream &dst) const {
 	dst << "    dereference " << destination << ", *" << source << std::endl;
 }
+
+// *******************************************
+
+AddInstruction::AddInstruction(std::string destination, std::string source1, std::string source2)
+: destination(destination), source1(source1), source2(source2) {}
+
+void AddInstruction::Debug(std::ostream &dst) const {
+	dst << "    add " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+// *******************************************
+
+SubInstruction::SubInstruction(std::string destination, std::string source1, std::string source2)
+: destination(destination), source1(source1), source2(source2) {}
+
+void SubInstruction::Debug(std::ostream &dst) const {
+	dst << "    sub " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+// *******************************************
+
+MulInstruction::MulInstruction(std::string destination, std::string source1, std::string source2)
+: destination(destination), source1(source1), source2(source2) {}
+
+void MulInstruction::Debug(std::ostream &dst) const {
+	dst << "    mul " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+// *******************************************
+
+DivInstruction::DivInstruction(std::string destination, std::string source1, std::string source2)
+: destination(destination), source1(source1), source2(source2) {}
+
+void DivInstruction::Debug(std::ostream &dst) const {
+	dst << "    div " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+// *******************************************
+
+ModInstruction::ModInstruction(std::string destination, std::string source1, std::string source2)
+: destination(destination), source1(source1), source2(source2) {}
+
+void ModInstruction::Debug(std::ostream &dst) const {
+	dst << "    mod " << destination << ", " << source1 << ", " << source2 << std::endl;
+}

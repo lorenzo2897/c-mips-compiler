@@ -13,6 +13,7 @@
 class Instruction {
 public:
 	virtual void Debug(std::ostream& dst) const = 0;
+	virtual void PrintMIPS(FunctionStack& stack, FunctionStack& globals, FunctionStack& functions) const;
 };
 
 // *******************************************
@@ -122,6 +123,66 @@ private:
 	std::string source;
 public:
 	DereferenceInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class AddInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+public:
+	AddInstruction(std::string destination, std::string source1, std::string source2);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class SubInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+public:
+	SubInstruction(std::string destination, std::string source1, std::string source2);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class MulInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+public:
+	MulInstruction(std::string destination, std::string source1, std::string source2);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class DivInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+public:
+	DivInstruction(std::string destination, std::string source1, std::string source2);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class ModInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+public:
+	ModInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
 };
 
