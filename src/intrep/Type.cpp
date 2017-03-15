@@ -154,5 +154,13 @@ bool Type::equals(Type t) const {
 }
 
 bool Type::is_compatible(Type t) const {
+	// both are pointers
+	if(is_pointer() && t.is_pointer()) {
+		return pointer_depth == t.pointer_depth;
+	// only one is pointer
+	} else if(is_pointer() || t.is_pointer()) {
+		return false;
+	}
+	// neither are pointers
 	return bytes() == t.bytes();
 }

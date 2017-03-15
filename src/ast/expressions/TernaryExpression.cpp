@@ -16,9 +16,13 @@ Type TernaryExpression::GetType(VariableMap const& bindings) const {
 	Type a = true_branch->GetType(bindings);
 	Type b = false_branch->GetType(bindings);
 
-	if(a.equals(b)) {
+	if(a.is_compatible(b)) {
 		return a;
 	} else {
-		throw compile_error("ternary expression has different types", sourceFile, sourceLine);
+		throw compile_error("ternary expression has incompatible types", sourceFile, sourceLine);
 	}
+}
+
+std::string TernaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error("cannot use ternary operators within an l-value", sourceFile, sourceLine);
 }
