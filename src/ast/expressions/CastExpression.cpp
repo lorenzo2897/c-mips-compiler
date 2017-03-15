@@ -1,9 +1,10 @@
 #include "CastExpression.hpp"
 
-CastExpression::CastExpression() : rvalue(NULL) {}
+CastExpression::CastExpression() : Expression(), rvalue(NULL) {}
 
 CastExpression::CastExpression(std::string cast_type, int pointer_depth, Expression* expression)
 :
+Expression(),
 cast_type(Type(cast_type, pointer_depth)),
 rvalue(expression)
 {}

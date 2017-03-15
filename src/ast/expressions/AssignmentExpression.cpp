@@ -1,6 +1,6 @@
 #include "AssignmentExpression.hpp"
 
-AssignmentExpression::AssignmentExpression(Expression* l, Expression* r, char assignment_type) : lvalue(l), rvalue(r), assignment_type(assignment_type) {}
+AssignmentExpression::AssignmentExpression(Expression* l, Expression* r, char assignment_type) : Expression(), lvalue(l), rvalue(r), assignment_type(assignment_type) {}
 
 void AssignmentExpression::Debug(std::ostream& dst, int indent) const {
 	dst << "(";
@@ -29,10 +29,10 @@ std::string AssignmentExpression::MakeIR(VariableMap const& bindings, FunctionSt
 		return src;
 	} else {
 		// TODO: implement unary assignment
-		throw compile_error("unary assignment expressions not implemented");
+		throw compile_error("unary assignment expressions not implemented", sourceFile, sourceLine);
 	}
 }
 
 std::string AssignmentExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	throw compile_error("cannot use an assignment expression within an l-value");
+	throw compile_error("cannot use an assignment expression within an l-value", sourceFile, sourceLine);
 }

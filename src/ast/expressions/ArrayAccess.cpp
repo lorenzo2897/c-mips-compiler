@@ -1,6 +1,6 @@
 #include "ArrayAccess.hpp"
 
-ArrayAccess::ArrayAccess(Expression* base, Expression* index) : array_base(base), array_index(index) {}
+ArrayAccess::ArrayAccess(Expression* base, Expression* index) : Expression(), array_base(base), array_index(index) {}
 
 void ArrayAccess::Debug(std::ostream& dst, int indent) const {
 	dst << "(";

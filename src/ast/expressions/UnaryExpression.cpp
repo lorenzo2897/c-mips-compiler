@@ -15,9 +15,9 @@ Node* UnaryExpression::compute_sizeof_type(std::vector<std::string> *specifiers)
 	}
 }
 
-UnaryExpression::UnaryExpression(Expression* expression, UnaryOperator op) : expression(expression), op(op) {}
+UnaryExpression::UnaryExpression(Expression* expression, UnaryOperator op) : Expression(), expression(expression), op(op) {}
 
-UnaryExpression::UnaryExpression(Expression* expression, char opchar) : expression(expression) {
+UnaryExpression::UnaryExpression(Expression* expression, char opchar) : Expression(), expression(expression) {
 	switch (opchar) {
 		case '+':
 			op = op_positive;
@@ -75,6 +75,8 @@ void UnaryExpression::Debug(std::ostream& dst, int indent) const {
 Type UnaryExpression::GetType(VariableMap const& bindings) const {
 	if(op == op_sizeof) {
 		return Type("int", 0);
+	} else if(op == op_logicalnot) {
+		return Type("int", 0);
 	} else if(op == op_addressof) {
 		return expression->GetType(bindings).addressof();
 	} else if(op == op_dereference) {
@@ -95,16 +97,16 @@ std::string UnaryExpression::MakeIR(VariableMap const& bindings, FunctionStack& 
 		return r;
 	} else {
 		// TODO: implement unary expressions
-		throw compile_error("UnaryExpression operator not implemented");
+		throw compile_error("UnaryExpression operator not implemented", sourceFile, sourceLine);
 	}
 }
 
 std::string UnaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
 	if(op == op_addressof) {
-		throw compile_error("a memory address is not an l-value");
+		throw compile_error("a memory address is not an l-value", sourceFile, sourceLine);
 	} else if(op == op_dereference) {
 		return expression->MakeIR(bindings, stack, out);
 	} else {
-		throw compile_error("cannot use unary operators within an l-value");
+		throw compile_error("cannot use unary operators within an l-value", sourceFile, sourceLine);
 	}
 }

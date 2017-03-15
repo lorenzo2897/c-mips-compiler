@@ -1,6 +1,6 @@
 #include "TernaryExpression.hpp"
 
-TernaryExpression::TernaryExpression(Expression* condition, Expression* t, Expression* f) : condition(condition), true_branch(t), false_branch(f) {}
+TernaryExpression::TernaryExpression(Expression* condition, Expression* t, Expression* f) : Expression(), condition(condition), true_branch(t), false_branch(f) {}
 
 void TernaryExpression::Debug(std::ostream& dst, int indent) const {
 	dst << "(";
@@ -19,6 +19,6 @@ Type TernaryExpression::GetType(VariableMap const& bindings) const {
 	if(a.equals(b)) {
 		return a;
 	} else {
-		throw compile_error("ternary expression has different types");
+		throw compile_error("ternary expression has different types", sourceFile, sourceLine);
 	}
 }

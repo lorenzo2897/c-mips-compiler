@@ -154,11 +154,10 @@ std::string BinaryExpression::MakeIR(VariableMap const& bindings, FunctionStack&
 		out.push_back(instr);
 		return dst;
 	} else {
-		// TODO: implemented binary operators
-		throw compile_error("assembly generation of BinaryExpression not fully implemented");
+		throw compile_error("assembly generation of BinaryExpression not fully implemented", sourceFile, sourceLine);
 	}
 }
 
 std::string BinaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	throw compile_error("cannot use binary operators within an l-value");
+	throw compile_error("cannot use binary operators within an l-value", sourceFile, sourceLine);
 }
