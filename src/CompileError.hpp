@@ -1,3 +1,6 @@
+#ifndef COMPILE_ERROR_H
+#define COMPILE_ERROR_H
+
 #include <stdexcept>
 #include <sstream>
 #include <cstdio>
@@ -35,3 +38,5 @@ public:
 		return s.c_str();
 	}
 };
+
+#endif

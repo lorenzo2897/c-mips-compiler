@@ -7,13 +7,15 @@
 #include <stdint.h>
 
 #include "Type.hpp"
+#include "VariableMap.hpp"
+#include "../CompileError.hpp"
 
 // *******************************************
 
 class Instruction {
 public:
 	virtual void Debug(std::ostream& dst) const = 0;
-	virtual void PrintMIPS(FunctionStack& stack, FunctionStack& globals, FunctionStack& functions) const;
+	//virtual void PrintMIPS(FunctionStack& stack, FunctionStack& globals, FunctionStack& functions) const;
 };
 
 // *******************************************
@@ -123,6 +125,54 @@ private:
 	std::string source;
 public:
 	DereferenceInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class LogicalInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+	char logicalType;
+public:
+	LogicalInstruction(std::string destination, std::string source1, std::string source2, char logicalType);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+class BitwiseInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+	char operatorType;
+public:
+	BitwiseInstruction(std::string destination, std::string source1, std::string source2, char operatorType);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+class EqualityInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+	char equalityType;
+public:
+	EqualityInstruction(std::string destination, std::string source1, std::string source2, char equalityType);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class ShiftInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source1;
+	std::string source2;
+	bool doRightShift;
+public:
+	ShiftInstruction(std::string destination, std::string source1, std::string source2, bool doRightShift);
 	virtual void Debug(std::ostream& dst) const;
 };
 

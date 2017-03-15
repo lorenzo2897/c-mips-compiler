@@ -95,6 +95,94 @@ void DereferenceInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
+LogicalInstruction::LogicalInstruction(std::string destination, std::string source1, std::string source2, char logicalType)
+: destination(destination), source1(source1), source2(source2), logicalType(logicalType) {}
+
+void LogicalInstruction::Debug(std::ostream &dst) const {
+	switch (logicalType) {
+		case '&':
+			dst << "    logicalAnd " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '|':
+			dst << "    logicalOr " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '!':
+			dst << "    logicalNot " << destination << ", " << source1 << std::endl;
+			break;
+		default:
+			throw compile_error("unsupported type of boolean operator in LogicalInstruction");
+	}
+}
+
+// *******************************************
+
+BitwiseInstruction::BitwiseInstruction(std::string destination, std::string source1, std::string source2, char operatorType)
+: destination(destination), source1(source1), source2(source2), operatorType(operatorType) {}
+
+void BitwiseInstruction::Debug(std::ostream &dst) const {
+	switch (operatorType) {
+		case '&':
+			dst << "    bitwiseAnd " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '|':
+			dst << "    bitwiseOr " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '^':
+			dst << "    bitwiseXor " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '~':
+			dst << "    bitwiseNot " << destination << ", " << source1 << std::endl;
+			break;
+		default:
+			throw compile_error("unsupported type of boolean operator in BitwiseInstruction");
+	}
+}
+
+// *******************************************
+
+EqualityInstruction::EqualityInstruction(std::string destination, std::string source1, std::string source2, char equalityType)
+: destination(destination), source1(source1), source2(source2), equalityType(equalityType) {}
+
+void EqualityInstruction::Debug(std::ostream &dst) const {
+	switch (equalityType) {
+		case '=':
+			dst << "    equals " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '!':
+			dst << "    notEquals " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '<':
+			dst << "    lessThan " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case '>':
+			dst << "    greaterThan " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case 'l':
+			dst << "    lessOrEq " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		case 'g':
+			dst << "    greaterOrEq " << destination << ", " << source1 << ", " << source2 << std::endl;
+			break;
+		default:
+			throw compile_error("unsupported type of relational operator in EqualityInstruction");
+	}
+}
+
+// *******************************************
+
+ShiftInstruction::ShiftInstruction(std::string destination, std::string source1, std::string source2, bool doRightShift)
+: destination(destination), source1(source1), source2(source2), doRightShift(doRightShift) {}
+
+void ShiftInstruction::Debug(std::ostream &dst) const {
+	if(doRightShift) {
+		dst << "    rightshift " << destination << ", " << source1 << ", " << source2 << std::endl;
+	} else {
+		dst << "    leftshift " << destination << ", " << source1 << ", " << source2 << std::endl;
+	}
+}
+
+// *******************************************
+
 AddInstruction::AddInstruction(std::string destination, std::string source1, std::string source2)
 : destination(destination), source1(source1), source2(source2) {}
 

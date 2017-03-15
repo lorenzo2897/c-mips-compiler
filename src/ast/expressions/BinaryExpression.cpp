@@ -66,45 +66,92 @@ void BinaryExpression::Debug(std::ostream& dst, int indent) const {
 }
 
 Type BinaryExpression::GetType(VariableMap const& bindings) const {
-	return left->GetType(bindings);
+	switch (op) {
+		case op_equals:
+		case op_notequals:
+		case op_lessequal:
+		case op_moreequal:
+		case op_lessthan:
+		case op_morethan:
+		case op_logicaland:
+		case op_logicalor:
+			return Type("int", 0);
+		default:
+			return left->GetType(bindings);
+	}
 }
 
 
 std::string BinaryExpression::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	if(op == op_add) {
-		std::string src1 = left->MakeIR(bindings, stack, out);
-		std::string src2 = right->MakeIR(bindings, stack, out);
-		std::string dst = unique("add");
-		stack[dst] = GetType(bindings);
-		out.push_back(new AddInstruction(dst, src1, src2));
-		return dst;
+
+	std::string src1 = left->MakeIR(bindings, stack, out);
+	std::string src2 = right->MakeIR(bindings, stack, out);
+	std::string dst;
+	Instruction* instr = NULL;
+
+	if(op == op_logicaland) {
+		dst = unique("lgand");
+		instr = new LogicalInstruction(dst, src1, src2, '&');
+	} else if(op == op_logicalor) {
+		dst = unique("lgor");
+		instr = new LogicalInstruction(dst, src1, src2, '|');
+
+	} else if(op == op_bitwiseand) {
+		dst = unique("bw_and");
+		instr = new BitwiseInstruction(dst, src1, src2, '&');
+	} else if(op == op_bitwiseor) {
+		dst = unique("bw_or");
+		instr = new BitwiseInstruction(dst, src1, src2, '|');
+	} else if(op == op_bitwisexor) {
+		dst = unique("bw_xor");
+		instr = new BitwiseInstruction(dst, src1, src2, '^');
+
+	} else if(op == op_equals) {
+		dst = unique("eq");
+		instr = new EqualityInstruction(dst, src1, src2, '=');
+	} else if(op == op_notequals) {
+		dst = unique("neq");
+		instr = new EqualityInstruction(dst, src1, src2, '!');
+	} else if(op == op_lessthan) {
+		dst = unique("lt");
+		instr = new EqualityInstruction(dst, src1, src2, '<');
+	} else if(op == op_morethan) {
+		dst = unique("gt");
+		instr = new EqualityInstruction(dst, src1, src2, '>');
+	} else if(op == op_lessequal) {
+		dst = unique("lte");
+		instr = new EqualityInstruction(dst, src1, src2, 'l');
+	} else if(op == op_moreequal) {
+		dst = unique("gte");
+		instr = new EqualityInstruction(dst, src1, src2, 'g');
+
+	} else if(op == op_leftshift) {
+		dst = unique("lshift");
+		instr = new ShiftInstruction(dst, src1, src2, false);
+	} else if(op == op_rightshift) {
+		dst = unique("rshift");
+		instr = new ShiftInstruction(dst, src1, src2, true);
+
+	} else if(op == op_add) {
+		dst = unique("add");
+		instr = new AddInstruction(dst, src1, src2);
 	} else if(op == op_subtract) {
-		std::string src1 = left->MakeIR(bindings, stack, out);
-		std::string src2 = right->MakeIR(bindings, stack, out);
-		std::string dst = unique("sub");
-		stack[dst] = GetType(bindings);
-		out.push_back(new SubInstruction(dst, src1, src2));
-		return dst;
+		dst = unique("sub");
+		instr = new SubInstruction(dst, src1, src2);
 	} else if(op == op_multiply) {
-		std::string src1 = left->MakeIR(bindings, stack, out);
-		std::string src2 = right->MakeIR(bindings, stack, out);
-		std::string dst = unique("mul");
-		stack[dst] = GetType(bindings);
-		out.push_back(new MulInstruction(dst, src1, src2));
-		return dst;
+		dst = unique("mul");
+		instr = new MulInstruction(dst, src1, src2);
 	} else if(op == op_divide) {
-		std::string src1 = left->MakeIR(bindings, stack, out);
-		std::string src2 = right->MakeIR(bindings, stack, out);
-		std::string dst = unique("div");
-		stack[dst] = GetType(bindings);
-		out.push_back(new DivInstruction(dst, src1, src2));
-		return dst;
+		dst = unique("div");
+		instr = new DivInstruction(dst, src1, src2);
 	} else if(op == op_modulo) {
-		std::string src1 = left->MakeIR(bindings, stack, out);
-		std::string src2 = right->MakeIR(bindings, stack, out);
-		std::string dst = unique("mod");
+		dst = unique("mod");
+		instr = new ModInstruction(dst, src1, src2);
+	}
+
+	if(instr) {
 		stack[dst] = GetType(bindings);
-		out.push_back(new ModInstruction(dst, src1, src2));
+		out.push_back(instr);
 		return dst;
 	} else {
 		// TODO: implemented binary operators
