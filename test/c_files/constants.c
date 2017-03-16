@@ -1,3 +1,5 @@
+/* constants and conversions */
+
 int main() {
 	char* x = "hey";
     int n = 6;
@@ -7,7 +9,6 @@ int main() {
     double d2 = 26.65363547654745680;
 
     for(int i = 0; i < 5; i++) {
-        
+
     }
 }
-
