@@ -8,6 +8,17 @@ rm -r $LOGS/*
 
 chmod u+x test/makefile.sh
 
+if [[ "$1" == "clean" ]]; then
+	echo "Cleaning output directory..."
+	rm -rf test/out/asm
+	rm -rf test/out/unit
+	rm -rf $LOGS
+	rm -f test/out/makefile_dependencies.png
+	rm -f test/out/summary.html
+	echo "Done :)"
+	exit
+fi
+
 # =====================================================
 # Begin tests
 # =====================================================
