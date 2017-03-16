@@ -75,7 +75,7 @@ Automated unit tests can be carried out using a basic testing framework written 
 To create a unit test, add a C source file in the `test/c_files/unit/` directory. The file should follow the format:
 
 ```c
-/*! short test description */
+/*d short test description */
 /*@ input_a input_b input_c correct_output */
 
 int func(int a, int b, int c) {
@@ -83,7 +83,7 @@ int func(int a, int b, int c) {
 }
 ```
 
-Note that `func()` is the entry point for the unit test. You may provide as many test tuples as you wish.
+Note that `func()` is the entry point for the unit test. You may provide as many `/*@ */` test tuples as you wish.
 
 #### Running tests
 
