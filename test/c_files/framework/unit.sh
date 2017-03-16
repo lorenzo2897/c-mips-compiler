@@ -6,13 +6,14 @@ EXIT_CODE=0
 
 if [[ "$1" == "lscc" ]]; then
 	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
+	mips-linux-gnu-gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 fi
 
 if [[ "$1" == "gcc" ]]; then
 	gcc -std=c90 -pedantic -S test/c_files/unit/$2.c -o test/out/asm/$2.s
+	gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 fi
 
-gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 
 # run the test program for each test tuple
 test_description=""

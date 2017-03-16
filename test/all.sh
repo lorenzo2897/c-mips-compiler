@@ -77,18 +77,44 @@ echo "</a>" >> $HTML
 echo "</div>" >> $HTML
 
 # =====================================================
-# Parser
+# Unit tests check on gcc
 # =====================================================
 
-echo "Testing the parser"
-
+echo "Running automated unit tests against GCC golden reference"
+test/unit.sh gcc > $LOGS/unit_gcc.txt 2>&1
 PASS=$?
+
 echo "<div>" >> $HTML
 if [[ $PASS -eq 0 ]]; then
-	echo "<h2 class=\"pass\">Parser</h2>" >> $HTML
+	echo "<h2 class=\"pass\">Unit tests on gcc</h2>" >> $HTML
 else
-	echo "<h2 class=\"fail\">Parser</h2>" >> $HTML
+	echo "<h2 class=\"fail\">Unit tests on gcc</h2>" >> $HTML
 fi
+echo "<a href=\"logs/unit_gcc.txt\">" >> $HTML
+tail -1 $LOGS/unit_gcc.txt >> $HTML
+echo "</a>" >> $HTML
+echo "</div>" >> $HTML
+
+# =====================================================
+# Unit tests
+# =====================================================
+
+echo "Running automated unit tests on lscc"
+test/unit.sh > $LOGS/unit.txt 2>&1
+PASS=$?
+
+echo "<div>" >> $HTML
+if [[ $PASS -eq 0 ]]; then
+	echo "<h2 class=\"pass\">Unit tests on lscc</h2>" >> $HTML
+else
+	echo "<h2 class=\"fail\">Unit tests on lscc</h2>" >> $HTML
+fi
+echo "<a href=\"logs/unit.txt\">" >> $HTML
+echo "View raw logs here" >> $HTML
+echo "</a>" >> $HTML
+echo "<pre style=\"white-space: pre-wrap;\">" >> $HTML
+cat $LOGS/unit.txt >> $HTML
+echo "</pre>" >> $HTML
 echo "</div>" >> $HTML
 
 # =====================================================
@@ -101,6 +127,6 @@ echo
 echo "TEST COMPLETE"
 echo "============="
 echo "The test results are available at $HTML"
-if type open > /dev/null; then
-	open -a "Google Chrome" $HTML
-fi
+#if type open > /dev/null; then
+#	open -a "Google Chrome" $HTML
+#fi

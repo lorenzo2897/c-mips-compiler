@@ -57,3 +57,9 @@ done
 
 echo
 echo "Passed $PASSED out of $TOTAL unit tests"
+
+if [[ $PASSED -eq $TOTAL ]]; then
+	exit 0
+else
+	exit 1
+fi
