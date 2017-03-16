@@ -183,6 +183,28 @@ void ShiftInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
+NegativeInstruction::NegativeInstruction(std::string destination, std::string source)
+: destination(destination), source(source) {}
+
+void NegativeInstruction::Debug(std::ostream &dst) const {
+	dst << "    negative " << destination << ", " << source << std::endl;
+}
+
+// *******************************************
+
+IncrementInstruction::IncrementInstruction(std::string destination, std::string source, bool decrement)
+: destination(destination), source(source), decrement(decrement) {}
+
+void IncrementInstruction::Debug(std::ostream &dst) const {
+	if(decrement) {
+		dst << "    decrement " << destination << ", " << source << std::endl;
+	} else {
+		dst << "    increment " << destination << ", " << source << std::endl;
+	}
+}
+
+// *******************************************
+
 AddInstruction::AddInstruction(std::string destination, std::string source1, std::string source2)
 : destination(destination), source1(source1), source2(source2) {}
 

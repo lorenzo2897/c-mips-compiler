@@ -87,16 +87,75 @@ Type UnaryExpression::GetType(VariableMap const& bindings) const {
 }
 
 std::string UnaryExpression::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	if(op == op_addressof) {
+	if(op == op_preincrement || op == op_predecrement) { // equivalent to (expr = expr + 1)
+		// do the increment
+		std::string src = expression->MakeIR(bindings, stack, out);
+		std::string increment_dst = unique("incr");
+		stack[increment_dst] = GetType(bindings);
+		out.push_back(new IncrementInstruction(increment_dst, src, op == op_predecrement));
+		// assign incremented value to original variable
+		std::string assign_dst = expression->MakeIR_lvalue(bindings, stack, out);
+		out.push_back(new AssignInstruction(assign_dst, increment_dst));
+		// return variable
+		return src;
+
+	} else if(op == op_postincrement || op == op_postdecrement) {
+		// make a copy of the variable
+		std::string src = expression->MakeIR(bindings, stack, out);
+		std::string var_copy = unique("postfix_copy");
+		stack[var_copy] = GetType(bindings);
+		out.push_back(new MoveInstruction(var_copy, src));
+		// do the increment
+		std::string increment_dst = unique("incr");
+		stack[increment_dst] = GetType(bindings);
+		out.push_back(new IncrementInstruction(increment_dst, src, op == op_postdecrement));
+		// assign incremented value to original variable
+		std::string assign_dst = expression->MakeIR_lvalue(bindings, stack, out);
+		out.push_back(new AssignInstruction(assign_dst, increment_dst));
+		// return old value of variable
+		return var_copy;
+
+	} else if(op == op_positive) {
+		return expression->MakeIR(bindings, stack, out);
+
+	} else if(op == op_negative) {
+		std::string src = expression->MakeIR(bindings, stack, out);
+		std::string dst = unique("neg");
+		stack[dst] = GetType(bindings);
+		out.push_back(new NegativeInstruction(dst, src));
+		return dst;
+
+	} else if(op == op_addressof) {
 		return expression->MakeIR_lvalue(bindings, stack, out);
+
 	} else if(op == op_dereference) {
 		std::string s = expression->MakeIR(bindings, stack, out);
 		std::string r = unique("deref");
-		stack[r] = expression->GetType(bindings).dereference();
+		stack[r] = GetType(bindings);
 		out.push_back(new DereferenceInstruction(r, s));
 		return r;
+
+	} else if(op == op_bitwisenot) {
+		std::string src = expression->MakeIR(bindings, stack, out);
+		std::string dst = unique("bw_not");
+		stack[dst] = GetType(bindings);
+		out.push_back(new BitwiseInstruction(dst, src, "", '~'));
+		return dst;
+
+	} else if(op == op_logicalnot) {
+		std::string src = expression->MakeIR(bindings, stack, out);
+		std::string dst = unique("lgnot");
+		stack[dst] = GetType(bindings);
+		out.push_back(new LogicalInstruction(dst, src, "", '!'));
+		return dst;
+
+	} else if(op == op_sizeof) {
+		std::string dst = unique("sizeof");
+		stack[dst] = GetType(bindings);
+		out.push_back(new ConstantInstruction(dst, Type("int", 0), expression->GetType(bindings).bytes()));
+		return dst;
+
 	} else {
-		// TODO: implement unary expressions
 		throw compile_error("UnaryExpression operator not implemented", sourceFile, sourceLine);
 	}
 }

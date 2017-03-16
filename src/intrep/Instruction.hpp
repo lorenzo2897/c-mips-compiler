@@ -178,6 +178,29 @@ public:
 
 // *******************************************
 
+class NegativeInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+public:
+	NegativeInstruction(std::string destination, std::string source);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
+class IncrementInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+	bool decrement;
+public:
+	IncrementInstruction(std::string destination, std::string source, bool decrement);
+	virtual void Debug(std::ostream& dst) const;
+};
+
+// *******************************************
+
 class AddInstruction : public Instruction {
 private:
 	std::string destination;
