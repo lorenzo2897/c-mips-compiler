@@ -15,12 +15,18 @@ fi
 gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 
 # run the test program for each test tuple
+test_description=""
 while read -r line || [[ -n "$line" ]]; do
+
+	if [[ "$line" == \/\*d* ]]; then
+		test_description="${line:4:-3}"
+	fi
+
     if [[ "$line" == \/\*@* ]]; then
 		parts=($line)
 		test/out/unit/$2 ${parts[1]} ${parts[2]} ${parts[3]} ${parts[4]}
 		if [[ "$?" -ne "0" ]]; then
-			echo "Failed $2 for tuple (${parts[1]}, ${parts[2]}, ${parts[3]}) => ${parts[4]}"
+			echo "Failed $2 ($test_description) for tuple (${parts[1]}, ${parts[2]}, ${parts[3]}) => ${parts[4]}"
 			echo
 			EXIT_CODE=1
 		fi

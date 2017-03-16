@@ -67,3 +67,28 @@ Makefile correctness can be checked by installing [make2graph](https://github.co
 Run `php test/lexer.php` to generate random C tokens and feed them through the lexer to test its functionality.
 
 Make sure you `make bin/c_lexer` beforehand!
+
+### Creating and running compiler unit tests
+
+Automated unit tests can be carried out using a basic testing framework written in C and bash.
+
+To create a unit test, add a C source file in the `test/c_files/unit/` directory. The file should follow the format:
+
+```c
+/*! short test description */
+/*@ input_a input_b input_c correct_output */
+
+int func(int a, int b, int c) {
+	return 0;
+}
+```
+
+Note that `func()` is the entry point for the unit test. You may provide as many test tuples as you wish.
+
+#### Running tests
+
+To execute all unit tests, run `test/unit.sh`.
+
+To execute all unit tests through gcc instead of lscc, run `test/unit.sh gcc`.
+
+To run a single unit test, run `test/c_files/framework/unit.sh <mode> <testname>` where mode is `lscc` or `gcc`, and testname is the name of the unit test without the .c extension.
