@@ -30,5 +30,6 @@
 
 #include "ast/Variable.hpp"
 #include "ast/Value.hpp"
+#include "ast/TypeSuffix.hpp"
 
 #include "intrep/Type.hpp"

@@ -259,4 +259,16 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
+// *******************************************
+
+class CastInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string source;
+	Type cast_type;
+public:
+	CastInstruction(std::string destination, std::string source, Type cast_type);
+	virtual void Debug(std::ostream& dst) const;
+};
+
 #endif

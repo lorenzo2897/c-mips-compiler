@@ -48,6 +48,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	dst << std::endl << "# Intermediate representation generated using lscc" << std::endl << std::endl;
 
 	VariableMap bindings;
+	ArrayMap arrays;
 
 	// populate map with global varaibles
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
@@ -55,9 +56,16 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
 		}
 		bindings[(*itr)->identifier] = Binding((*itr)->identifier, (*itr)->var_type, true);
+		if((*itr)->is_array()) {
+			arrays[(*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
+		}
 	}
 
 	// generate labels for variables
+	dst << "# Global arrays" << std::endl;
+	for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
+		dst << (*itr).first << ": (" << (*itr).second.total_size() << ") " << (*itr).second.type.name() << " [" << (*itr).second.elements << "]" << std::endl;
+	}
 	dst << "# Global variables" << std::endl;
 	for(VariableMap::const_iterator itr = bindings.begin(); itr != bindings.end(); ++itr) {
 		dst << (*itr).first << ": (" << (*itr).second.type.bytes() << ") " << (*itr).second.type.name() << std::endl;

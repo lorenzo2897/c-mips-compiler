@@ -83,6 +83,10 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 	// print IR in text form
 	dst << function_name << ":" << std::endl;
 
+	dst << "    # arrays" << std::endl;
+	for(ArrayMap::const_iterator itr = stack.arrays.begin(); itr != stack.arrays.end(); ++itr) {
+		dst << "    " << (*itr).first << " (" << (*itr).second.total_size() << ") " << (*itr).second.type.name() << " [" << (*itr).second.elements << "]" << std::endl;
+	}
 	dst << "    # stack" << std::endl;
 	for(FunctionStack::const_iterator itr = stack.begin(); itr != stack.end(); ++itr) {
 		dst << "    " << (*itr).first << " (" << (*itr).second.bytes() << ") " << (*itr).second.name() << std::endl;

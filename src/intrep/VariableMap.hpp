@@ -24,6 +24,22 @@ struct Binding {
 	}
 };
 
+struct ArrayType {
+	Type type;
+	unsigned elements;
+
+	ArrayType() {}
+
+	ArrayType(Type type, unsigned elements)
+	: type(type), elements(elements) {
+	}
+
+	unsigned total_size() const {
+		return type.bytes() * elements;
+	}
+
+};
+
 // **********************************
 
 class Declaration;
@@ -33,11 +49,14 @@ public:
 	void add_bindings(std::vector<Declaration*> const& declarations);
 };
 
+typedef std::map<std::string, ArrayType> ArrayMap;
+
 
 // **********************************
 
 class FunctionStack : public std::map<std::string, Type> {
 public:
+	ArrayMap arrays;
 	void add_variables(VariableMap const& aliases, std::vector<Declaration*> const& declarations);
 };
 

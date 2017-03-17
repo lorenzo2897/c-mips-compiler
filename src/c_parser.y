@@ -22,6 +22,7 @@
   double d;
   std::vector<std::string>* strvector;
   std::vector<Expression*>* expvector;
+  TypeSuffix* typesuffix;
   Node* ast_node;
 }
 
@@ -54,7 +55,8 @@
 
 %type <s> IDENTIFIER TypeSpecifier
 %type <c> AssignmentOperator UnaryOperator
-%type <i> TypeSuffix
+%type <i> Pointer
+%type <typesuffix> TypeSuffix
 %type <strvector> DeclarationSpecifiers
 %type <expvector> FunctionArgumentList
 %type <ast_node> ProgramRoot TopLevelDeclaration DeclarationList Declaration Declarator Initialiser InitialiserList InitialiserListValue Function FunctionParameterList Value
@@ -122,12 +124,14 @@ TypeSpecifier	: TVOID { $$ = strdup("void"); }
 				| REGISTER { $$ = strdup("register"); }
 
 
-TypeSuffix	: Pointer { $$ = 1; }
-			| TypeSuffix Pointer  { $$ += 1; }
+TypeSuffix	: Pointer { $$ = new TypeSuffix(1, $1); }
+			| TypeSuffix Pointer  { $$->depth += 1; $$->elements *= $2; }
 
-Pointer	: '[' ']'
-		| '[' Value ']'
-		| '*'
+Pointer	: '[' ']' { $$ = 0; }
+		| '[' DECINT ']' { $$ = $2; }
+		| '[' OCTINT ']' { $$ = $2; }
+		| '[' HEXINT ']' { $$ = $2; }
+		| '*' { $$ = 0; }
 
 DeclarationList : Declaration {
 					$$ = new Scope();
@@ -151,13 +155,21 @@ Declarator : IDENTIFIER {
 			}
 			| TypeSuffix IDENTIFIER {
 				$$ = new Declaration();
-				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $1;
+				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $1->depth;
+				dynamic_cast<Declaration*>$$->array_elements = $1->elements;
 				dynamic_cast<Declaration*>$$->identifier = $2;
 			}
 			| IDENTIFIER TypeSuffix {
 				$$ = new Declaration();
-				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $2;
+				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $2->depth;
+				dynamic_cast<Declaration*>$$->array_elements = $2->elements;
 				dynamic_cast<Declaration*>$$->identifier = $1;
+			}
+			| TypeSuffix IDENTIFIER TypeSuffix {
+				$$ = new Declaration();
+				dynamic_cast<Declaration*>$$->var_type.pointer_depth = $1->depth + $3->depth;
+				dynamic_cast<Declaration*>$$->array_elements = ($1->elements ? $1->elements : 1) * $3->elements;
+				dynamic_cast<Declaration*>$$->identifier = $2;
 			}
 
 Initialiser : AssignmentExpression
@@ -414,7 +426,7 @@ CastExpression	: UnaryExpression { $$ = $1; }
 					$$ = new CastExpression($2, 0, dynamic_cast<Expression*>$4);
 				}
 				| '(' TypeSpecifier TypeSuffix ')' CastExpression {
-					$$ = new CastExpression($2, $3, dynamic_cast<Expression*>$5);
+					$$ = new CastExpression($2, $3->depth, dynamic_cast<Expression*>$5);
 				}
 
 UnaryExpression	: PostfixExpression

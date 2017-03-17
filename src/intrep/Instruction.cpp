@@ -247,3 +247,12 @@ ModInstruction::ModInstruction(std::string destination, std::string source1, std
 void ModInstruction::Debug(std::ostream &dst) const {
 	dst << "    mod " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
+
+// *******************************************
+
+CastInstruction::CastInstruction(std::string destination, std::string source, Type cast_type)
+: destination(destination), source(source), cast_type(cast_type) {}
+
+void CastInstruction::Debug(std::ostream &dst) const {
+	dst << "    cast " << destination << ", " << source << ", " << cast_type.name() << std::endl;
+}

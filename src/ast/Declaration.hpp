@@ -16,8 +16,11 @@ public:
 	Declaration();
 
 	Type var_type;
+	unsigned array_elements;
 	std::string identifier;
 	Expression* initialiser;
+
+	bool is_array() const;
 
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
