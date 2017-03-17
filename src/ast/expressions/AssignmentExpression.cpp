@@ -28,8 +28,69 @@ std::string AssignmentExpression::MakeIR(VariableMap const& bindings, FunctionSt
 		out.push_back(new AssignInstruction(dst, src));
 		return src;
 	} else {
-		// TODO: implement unary assignment
-		throw compile_error("unary assignment expressions not implemented", sourceFile, sourceLine);
+		// evaluate the left hand side to get the value to assign
+		std::string src_l = lvalue->MakeIR(bindings, stack, out);
+		// evaluate the right hand side to get the value to assign
+		std::string src_r = rvalue->MakeIR(bindings, stack, out);
+
+		std::string res;
+		Instruction* instr = NULL;
+
+		switch (assignment_type) {
+			case '+':
+				res = unique("add");
+				instr = new AddInstruction(res, src_l, src_r);
+				break;
+			case '-':
+				res = unique("sub");
+				instr = new SubInstruction(res, src_l, src_r);
+				break;
+			case '*':
+				res = unique("mul");
+				instr = new MulInstruction(res, src_l, src_r);
+				break;
+			case '/':
+				res = unique("div");
+				instr = new DivInstruction(res, src_l, src_r);
+				break;
+			case '%':
+				res = unique("mod");
+				instr = new ModInstruction(res, src_l, src_r);
+				break;
+			case '&':
+				res = unique("bw_and");
+				instr = new BitwiseInstruction(res, src_l, src_r, '&');
+				break;
+			case '|':
+				res = unique("bw_or");
+				instr = new BitwiseInstruction(res, src_l, src_r, '|');
+				break;
+			case '^':
+				res = unique("bw_xor");
+				instr = new BitwiseInstruction(res, src_l, src_r, '^');
+				break;
+			case '<':
+				res = unique("lshift");
+				instr = new ShiftInstruction(res, src_l, src_r, false);
+				break;
+			case '>':
+				res = unique("rshift");
+				instr = new ShiftInstruction(res, src_l, src_r, true);
+				break;
+			default:
+				throw compile_error("unary assignment expression not implemented", sourceFile, sourceLine);
+		}
+
+		// output the binary operation
+		stack[res] = GetType(bindings);
+		out.push_back(instr);
+
+		// evaluate the left hand side to get a pointer to the location to assign to
+		std::string dst = lvalue->MakeIR_lvalue(bindings, stack, out);
+
+		// output the assignment operation
+		out.push_back(new AssignInstruction(dst, res));
+		return dst;
 	}
 }
 
