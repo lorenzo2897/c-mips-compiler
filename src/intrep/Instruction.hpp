@@ -56,6 +56,15 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
+class GotoIfZeroInstruction : public Instruction {
+private:
+	std::string label_name;
+	std::string condition;
+public:
+	GotoIfZeroInstruction(std::string name, std::string condition);
+	virtual void Debug(std::ostream& dst) const;
+};
+
 // *******************************************
 
 class ReturnInstruction : public Instruction {

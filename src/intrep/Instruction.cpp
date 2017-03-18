@@ -41,6 +41,14 @@ void GotoInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
+GotoIfZeroInstruction::GotoIfZeroInstruction(std::string name, std::string condition) : label_name(name), condition(condition) {}
+
+void GotoIfZeroInstruction::Debug(std::ostream &dst) const {
+	dst << "    beqz " << condition << ", " << label_name << std::endl;
+}
+
+// *******************************************
+
 ReturnInstruction::ReturnInstruction(std::string return_variable) : return_variable(return_variable) {}
 
 void ReturnInstruction::Debug(std::ostream &dst) const {
