@@ -25,14 +25,15 @@ public:
 	}
 
 	virtual const char* what() const throw() {
-		std::string s = "error: ";
+		std::string s;
 
 		if(lineno != 0) {
 			char buf[10];
 			sprintf(buf, "%d", lineno);
-			s += filename + ":" + buf + ": ";
+			s = filename + ":" + buf + ": ";
 		}
-
+		
+		s += "error: ";
 		s += runtime_error::what();
 
 		return s.c_str();

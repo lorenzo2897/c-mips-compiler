@@ -46,6 +46,11 @@ class Declaration;
 
 class VariableMap : public std::map<std::string, Binding> {
 public:
+	std::string break_destination;
+	std::string continue_destination;
+
+	VariableMap();
+
 	void add_bindings(std::vector<Declaration*> const& declarations);
 };
 

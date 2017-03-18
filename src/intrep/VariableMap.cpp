@@ -4,6 +4,8 @@
 
 // **********************************
 
+VariableMap::VariableMap() : break_destination(""), continue_destination(""), std::map<std::string, Binding>() {}
+
 void VariableMap::add_bindings(std::vector<Declaration*> const& declarations) {
 	// check if there are any conflicting names in the current list
 	{
