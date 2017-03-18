@@ -60,5 +60,52 @@ void ForStatement::PrintXML(std::ostream& dst, int indent) const {
 }
 
 void ForStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	throw compile_error("assembly generation not implemented for this statement", sourceFile, sourceLine);
+	/*
+	for_begin:
+	  initialiser
+	for_condition:
+	  condition
+	  beqz for_end
+	for_body:
+	  body
+	for_afterthought:
+	  afterthought
+	  goto for_condition
+	for_end:
+	*/
+
+	// obtain a unique label group
+	std::string for_label = unique("for");
+
+	// add myself to the break/continue bindings
+	VariableMap for_bindings = bindings;
+	for_bindings.break_destination = for_label + "_end";
+	for_bindings.continue_destination = for_label + "_condition";
+
+	// emit instructions
+
+	// begin
+	out.push_back(new LabelInstruction(for_label + "_begin"));
+	if(exp_initialiser) exp_initialiser->MakeIR(for_bindings, stack, out);
+
+	// condition
+	out.push_back(new LabelInstruction(for_label + "_condition"));
+	if(exp_condition) {
+		std::string cond_res = exp_condition->MakeIR(for_bindings, stack, out);
+		out.push_back(new GotoIfZeroInstruction(for_label + "_end", cond_res));
+	} else {
+		// empty condition evaluates to true, so just fall through to body
+	}
+
+	// body
+	out.push_back(new LabelInstruction(for_label + "_body"));
+	if(body) body->MakeIR(for_bindings, stack, out);
+
+	// afterthought
+	out.push_back(new LabelInstruction(for_label + "_afterthought"));
+	if(exp_iteration) exp_iteration->MakeIR(for_bindings, stack, out);
+	out.push_back(new GotoInstruction(for_label + "_condition"));
+
+	// end
+	out.push_back(new LabelInstruction(for_label + "_end"));
 }
