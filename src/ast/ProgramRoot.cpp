@@ -57,7 +57,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		}
 		bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
 		if((*itr)->is_array()) {
-			arrays[(*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
+			arrays[(std::string)"var_" + (*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
 		}
 	}
 	// TODO : global variable initialisation
@@ -69,7 +69,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	}
 	dst << "# Global variables" << std::endl;
 	for(VariableMap::const_iterator itr = bindings.begin(); itr != bindings.end(); ++itr) {
-		dst << (*itr).first << ": (" << (*itr).second.type.bytes() << ") " << (*itr).second.type.name() << std::endl;
+		dst << (*itr).second.alias << ": (" << (*itr).second.type.bytes() << ") " << (*itr).second.type.name() << std::endl;
 	}
 
 	// populate map with function names
