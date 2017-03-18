@@ -41,18 +41,28 @@ void WhileStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, I
 	  goto while_begin
 	while_end:
 	*/
+
+	// obtain a unique label group
 	std::string while_label = unique("while");
+
+	// add myself to the break/continue bindings
+	VariableMap while_bindings = bindings;
+	while_bindings.break_destination = while_label + "_end";
+	while_bindings.continue_destination = while_label + "_condition";
+
+	// emit instructions
 	out.push_back(new LabelInstruction(while_label + "_begin"));
 
 	if(statement_before_condition) { // do {} while()
-		if(statement) statement->MakeIR(bindings, stack, out);
+		if(statement) statement->MakeIR(while_bindings, stack, out);
 	}
 
-	std::string cond_res = expression->MakeIR(bindings, stack, out); //condition
+	out.push_back(new LabelInstruction(while_label + "_condition"));
+	std::string cond_res = expression->MakeIR(while_bindings, stack, out); //condition
 	out.push_back(new GotoIfZeroInstruction(while_label + "_end", cond_res)); //beqz
 
 	if(!statement_before_condition) { // while() {}
-		if(statement) statement->MakeIR(bindings, stack, out);
+		if(statement) statement->MakeIR(while_bindings, stack, out);
 	}
 
 	out.push_back(new GotoInstruction(while_label + "_begin"));
