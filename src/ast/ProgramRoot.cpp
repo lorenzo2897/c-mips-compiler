@@ -55,13 +55,14 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		if(bindings.count((*itr)->identifier)) {
 			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
 		}
-		bindings[(*itr)->identifier] = Binding((*itr)->identifier, (*itr)->var_type, true);
+		bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
 		if((*itr)->is_array()) {
 			arrays[(*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
 		}
 	}
+	// TODO : global variable initialisation
 
-	// generate labels for variables
+	// generate labels for global variables
 	dst << "# Global arrays" << std::endl;
 	for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
 		dst << (*itr).first << ": (" << (*itr).second.total_size() << ") " << (*itr).second.type.name() << " [" << (*itr).second.elements << "]" << std::endl;

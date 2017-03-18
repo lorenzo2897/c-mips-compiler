@@ -8,5 +8,5 @@ void GotoStatement::Debug(std::ostream& dst, int indent) const {
 }
 
 void GotoStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	out.push_back(new GotoInstruction(label));
+	out.push_back(new GotoInstruction((std::string)"lbl_" + label));
 }

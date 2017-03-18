@@ -1,5 +1,7 @@
 #include "Instruction.hpp"
 
+#include <iomanip>
+
 // *******************************************
 
 SimpleInstruction::SimpleInstruction(std::string name, std::string arg1) : name(name), arg1(arg1) {
@@ -26,7 +28,7 @@ void SimpleInstruction::Debug(std::ostream &dst) const {
 LabelInstruction::LabelInstruction(std::string name) : label_name(name) {}
 
 void LabelInstruction::Debug(std::ostream &dst) const {
-	dst << "  lbl_" << label_name << ":" << std::endl;
+	dst << "  " << label_name << ":" << std::endl;
 }
 
 // *******************************************
@@ -34,7 +36,7 @@ void LabelInstruction::Debug(std::ostream &dst) const {
 GotoInstruction::GotoInstruction(std::string name) : label_name(name) {}
 
 void GotoInstruction::Debug(std::ostream &dst) const {
-	dst << "    goto lbl_" << label_name << std::endl;
+	dst << "    goto " << label_name << std::endl;
 }
 
 // *******************************************
@@ -51,7 +53,12 @@ ConstantInstruction::ConstantInstruction(std::string destination, Type type, uin
 : destination(destination), type(type), dataLo(dataLo), dataHi(dataHi) {}
 
 void ConstantInstruction::Debug(std::ostream &dst) const {
-	dst << "    constant " << destination << " " << dataHi << " " << dataLo << std::endl;
+	dst << "    constant " << destination
+	<< " "
+	<< std::hex << std::setfill('0') << std::setw(8) << dataHi
+	<< " "
+	<< std::hex << std::setfill('0') << std::setw(8) << dataLo
+	<< std::endl;
 }
 
 StringInstruction::StringInstruction(std::string destination, std::string data)

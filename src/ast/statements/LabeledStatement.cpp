@@ -15,8 +15,8 @@ void LabeledStatement::Debug(std::ostream& dst, int indent) const {
 }
 
 void LabeledStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
-	out.push_back(new LabelInstruction(label));
 	if(statement) {
+		out.push_back(new LabelInstruction((std::string)"lbl_" + label));
 		statement->MakeIR(bindings, stack, out);
 	}
 }
