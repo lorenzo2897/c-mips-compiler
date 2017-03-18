@@ -48,7 +48,7 @@ void WhileStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, I
 		if(statement) statement->MakeIR(bindings, stack, out);
 	}
 
-	std::string cond_res = condition->MakeIR(bindings, stack, out); //condition
+	std::string cond_res = expression->MakeIR(bindings, stack, out); //condition
 	out.push_back(new GotoIfZeroInstruction(while_label + "_end", cond_res)); //beqz
 
 	if(!statement_before_condition) { // while() {}
