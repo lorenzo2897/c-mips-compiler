@@ -35,3 +35,7 @@ std::string Variable::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& 
 	out.push_back(new AddressOfInstruction(r, s));
 	return r;
 }
+
+int32_t Variable::evaluate_int(VariableMap const& bindings) const {
+	throw compile_error("variable " + identifier + " cannot be used within a constant expression", sourceFile, sourceLine);
+}

@@ -19,6 +19,8 @@ public:
 	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 	virtual std::string MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 
+	virtual int32_t evaluate_int(VariableMap const& bindings) const;
+
 };
 
 

@@ -121,3 +121,20 @@ std::string Value::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRV
 			throw compile_error("invalid type");
 	}
 }
+
+int32_t Value::evaluate_int(VariableMap const& bindings) const {
+	switch (type) {
+		case V_STRING:
+			throw compile_error("cannot use a string as an integer expression");
+		case V_CHAR:
+			return val.c;
+		case V_INT:
+			return val.i;
+		case V_FLOAT:
+			throw compile_error("cannot use a float as an integer expression");
+		case V_DOUBLE:
+			throw compile_error("cannot use a double as an integer expression");
+		default:
+			throw compile_error("invalid type");
+	}
+}

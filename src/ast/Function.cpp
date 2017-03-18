@@ -65,14 +65,7 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 
 	// generate instructions for initialisers
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
-		if((*itr)->initialiser) {
-			std::string src = (*itr)->initialiser->MakeIR(bindings, stack, out);
-			std::string dst = unique((std::string)"addr_" + (*itr)->identifier + "_");
-			stack[dst] = bindings.at((*itr)->identifier).type.addressof();
-			out.push_back(new AddressOfInstruction(dst, bindings.at((*itr)->identifier).alias));
-			out.push_back(new AssignInstruction(dst, src));
-		}
-
+		(*itr)->MakeIR_initialisers(bindings, stack, out);
 	}
 
 	// generate instructions from statements

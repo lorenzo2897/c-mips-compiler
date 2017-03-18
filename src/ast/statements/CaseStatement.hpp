@@ -19,6 +19,10 @@ public:
 	Statement* statement;
 
 	virtual void Debug(std::ostream& dst, int indent) const;
+
+	virtual void MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
+
+	void eval_case(VariableMap const& bindings, bool& is_default, int32_t& value) const;
 };
 
 #endif

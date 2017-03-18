@@ -48,13 +48,13 @@ void IfStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVe
 	  false_branch
 	if_end:
 	*/
-	out.push_back(new LabelInstruction(if_label + "_begin"));				// if_begin:
-	std::string cond_res = condition->MakeIR(bindings, stack, out);			// condition
-	out.push_back(new GotoIfZeroInstruction(if_label + "_false", cond_res)); // beqz if_false
-	out.push_back(new LabelInstruction(if_label + "_true"));				// if_true:
-	if(true_body) true_body->MakeIR(bindings, stack, out);					// true_branch
-	out.push_back(new GotoInstruction(if_label + "_end"));					// goto if_end
-	out.push_back(new LabelInstruction(if_label + "_false"));				// if_false:
-	if(false_body) false_body->MakeIR(bindings, stack, out);				// false_branch
-	out.push_back(new LabelInstruction(if_label + "_end"));					// if_end:
+	out.push_back(new LabelInstruction(if_label + "_begin"));					// if_begin:
+	std::string cond_res = condition->MakeIR(bindings, stack, out);				// condition
+	out.push_back(new GotoIfEqualInstruction(if_label + "_false", cond_res, 0)); // beqz if_false
+	out.push_back(new LabelInstruction(if_label + "_true"));					// if_true:
+	if(true_body) true_body->MakeIR(bindings, stack, out);						// true_branch
+	out.push_back(new GotoInstruction(if_label + "_end"));						// goto if_end
+	out.push_back(new LabelInstruction(if_label + "_false"));					// if_false:
+	if(false_body) false_body->MakeIR(bindings, stack, out);					// false_branch
+	out.push_back(new LabelInstruction(if_label + "_end"));						// if_end:
 }

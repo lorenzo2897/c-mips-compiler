@@ -4,11 +4,12 @@
 Type::Type() : pointer_depth(0) {}
 
 Type::Type(std::vector<std::string> specifiers, int pointer_depth) : specifiers(specifiers), pointer_depth(pointer_depth) {
-
+	bytes(); // check if type string is valid
 }
 
 Type::Type(std::string specifier, int pointer_depth) : pointer_depth(pointer_depth) {
 	specifiers.push_back(specifier);
+	bytes(); // check if type string is valid
 }
 
 std::string Type::name() const {
@@ -46,6 +47,28 @@ Type Type::dereference() const {
 
 bool Type::is_pointer() const {
 	return pointer_depth > 0;
+}
+
+bool Type::is_integer() const {
+	if(is_pointer()) return false;
+
+	std::string last = specifiers.at(specifiers.size() - 1);
+	if(last == "char" || last == "short" || last == "long" || last == "int") {
+		return true;
+	}
+
+	return false;
+}
+
+bool Type::is_float() const {
+	if(is_pointer()) return false;
+
+	std::string last = specifiers.at(specifiers.size() - 1);
+	if(last == "float" || last == "double") {
+		return true;
+	}
+
+	return false;
 }
 
 unsigned Type::bytes() const {
@@ -129,7 +152,7 @@ unsigned Type::bytes() const {
 	}
 
 	std::string msg;
-	msg = "invalid type ";
+	msg = "invalid type: ";
 	msg += name();
 	throw compile_error(msg);
 	return 0;

@@ -26,3 +26,11 @@ Type TernaryExpression::GetType(VariableMap const& bindings) const {
 std::string TernaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
 	throw compile_error("cannot use ternary operators within an l-value", sourceFile, sourceLine);
 }
+
+int32_t TernaryExpression::evaluate_int(VariableMap const& bindings) const {
+	if(condition->evaluate_int(bindings)) {
+		return true_branch->evaluate_int(bindings);
+	} else {
+		return false_branch->evaluate_int(bindings);
+	}
+}

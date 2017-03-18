@@ -56,12 +56,13 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
-class GotoIfZeroInstruction : public Instruction {
+class GotoIfEqualInstruction : public Instruction {
 private:
 	std::string label_name;
-	std::string condition;
+	std::string variable;
+	int32_t value;
 public:
-	GotoIfZeroInstruction(std::string name, std::string condition);
+	GotoIfEqualInstruction(std::string name, std::string variable, int32_t value);
 	virtual void Debug(std::ostream& dst) const;
 };
 

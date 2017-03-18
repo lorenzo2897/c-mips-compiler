@@ -17,6 +17,8 @@ public:
 
 	std::string name() const;
 	bool is_pointer() const;
+	bool is_integer() const;
+	bool is_float() const;
 
 	unsigned bytes() const;
 	bool equals(Type t) const;

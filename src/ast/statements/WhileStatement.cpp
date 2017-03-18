@@ -59,7 +59,7 @@ void WhileStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, I
 
 	out.push_back(new LabelInstruction(while_label + "_condition"));
 	std::string cond_res = expression->MakeIR(while_bindings, stack, out); //condition
-	out.push_back(new GotoIfZeroInstruction(while_label + "_end", cond_res)); //beqz
+	out.push_back(new GotoIfEqualInstruction(while_label + "_end", cond_res, 0)); //beqz
 
 	if(!statement_before_condition) { // while() {}
 		if(statement) statement->MakeIR(while_bindings, stack, out);

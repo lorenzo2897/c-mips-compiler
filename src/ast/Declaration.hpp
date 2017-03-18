@@ -22,6 +22,8 @@ public:
 
 	bool is_array() const;
 
+	void MakeIR_initialisers(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
+
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 };

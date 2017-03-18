@@ -169,3 +169,21 @@ std::string UnaryExpression::MakeIR_lvalue(VariableMap const& bindings, Function
 		throw compile_error("cannot use unary operators within an l-value", sourceFile, sourceLine);
 	}
 }
+
+int32_t UnaryExpression::evaluate_int(VariableMap const& bindings) const {
+	int32_t e = expression->evaluate_int(bindings);
+	switch (op) {
+		case op_bitwisenot:
+			return ~e;
+		case op_logicalnot:
+			return !e;
+		case op_positive:
+			return e;
+		case op_negative:
+			return -e;
+		case op_sizeof:
+			return expression->GetType(bindings).bytes();
+		default:
+			throw compile_error("cannot use this unary operator in a constant expression", sourceFile, sourceLine);
+	}
+}

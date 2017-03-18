@@ -92,7 +92,7 @@ void ForStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRV
 	out.push_back(new LabelInstruction(for_label + "_condition"));
 	if(exp_condition) {
 		std::string cond_res = exp_condition->MakeIR(for_bindings, stack, out);
-		out.push_back(new GotoIfZeroInstruction(for_label + "_end", cond_res));
+		out.push_back(new GotoIfEqualInstruction(for_label + "_end", cond_res, 0));
 	} else {
 		// empty condition evaluates to true, so just fall through to body
 	}

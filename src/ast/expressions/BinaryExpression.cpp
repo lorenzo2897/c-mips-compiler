@@ -154,10 +154,55 @@ std::string BinaryExpression::MakeIR(VariableMap const& bindings, FunctionStack&
 		out.push_back(instr);
 		return dst;
 	} else {
-		throw compile_error("assembly generation of BinaryExpression not fully implemented", sourceFile, sourceLine);
+		throw compile_error("assembly generation of BinaryExpression not implemented for this operator", sourceFile, sourceLine);
 	}
 }
 
 std::string BinaryExpression::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
 	throw compile_error("cannot use binary operators within an l-value", sourceFile, sourceLine);
+}
+
+int32_t BinaryExpression::evaluate_int(VariableMap const& bindings) const {
+	int32_t l = left->evaluate_int(bindings);
+	int32_t r = right->evaluate_int(bindings);
+
+	switch (op) {
+		case op_logicalor:
+			return l || r;
+		case op_logicaland:
+			return l && r;
+		case op_bitwiseor:
+			return l | r;
+		case op_bitwisexor:
+			return l ^ r;
+		case op_bitwiseand:
+			return l & r;
+		case op_equals:
+			return l == r;
+		case op_notequals:
+			return l != r;
+		case op_lessthan:
+			return l < r;
+		case op_morethan:
+			return l > r;
+		case op_lessequal:
+			return l <= r;
+		case op_moreequal:
+			return l >= r;
+		case op_leftshift:
+			return l << r;
+		case op_rightshift:
+			return l >> r;
+		case op_add:
+			return l + r;
+		case op_subtract:
+			return l - r;
+		case op_multiply:
+			return l * r;
+		case op_divide:
+			return l / r;
+		case op_modulo:
+			return l % r;
+	}
+	throw compile_error("constant evaluation of BinaryExpression not implemented for this operator", sourceFile, sourceLine);
 }

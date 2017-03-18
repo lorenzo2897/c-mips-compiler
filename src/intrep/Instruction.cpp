@@ -41,10 +41,10 @@ void GotoInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
-GotoIfZeroInstruction::GotoIfZeroInstruction(std::string name, std::string condition) : label_name(name), condition(condition) {}
+GotoIfEqualInstruction::GotoIfEqualInstruction(std::string name, std::string variable, int32_t value) : label_name(name), variable(variable), value(value) {}
 
-void GotoIfZeroInstruction::Debug(std::ostream &dst) const {
-	dst << "    beqz " << condition << ", " << label_name << std::endl;
+void GotoIfEqualInstruction::Debug(std::ostream &dst) const {
+	dst << "    beq " << variable << ", " << value << ", " << label_name << std::endl;
 }
 
 // *******************************************
