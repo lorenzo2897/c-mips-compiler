@@ -21,6 +21,8 @@ public:
 
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
+
+	virtual void MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 };
 
 #endif
