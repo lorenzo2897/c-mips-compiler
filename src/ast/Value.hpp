@@ -43,6 +43,9 @@ public:
 	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const;
 
 	virtual int32_t evaluate_int(VariableMap const& bindings) const;
+
+	bool is_string_literal() const;
+	std::string get_string_literal() const;
 };
 
 #endif

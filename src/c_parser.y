@@ -185,9 +185,7 @@ InitialiserList	: InitialiserListValue {
 					dynamic_cast<InitialiserList*>$$->add(dynamic_cast<Expression*>$3);
 				}
 
-InitialiserListValue	: Value
-						| '+' Value { $$ = new UnaryExpression(dynamic_cast<Expression*>$2, '+'); }
-						| '-' Value { $$ = new UnaryExpression(dynamic_cast<Expression*>$2, '-'); }
+InitialiserListValue	: AssignmentExpression
 
 Function : Declarator '(' ')' CompoundStatement {
 				$$ = new Function();

@@ -138,3 +138,14 @@ int32_t Value::evaluate_int(VariableMap const& bindings) const {
 			throw compile_error("invalid type");
 	}
 }
+
+bool Value::is_string_literal() const {
+	return type == V_STRING;
+}
+
+std::string Value::get_string_literal() const {
+	if(type != V_STRING) {
+		throw compile_error("not a string literal");
+	}
+	return strval;
+}

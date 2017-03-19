@@ -14,12 +14,12 @@ extern std::string currentSourceFile;
 class Expression : public Node {
 
 protected:
-
-	int sourceLine;
-	std::string sourceFile;
 	Expression();
 
 public:
+	int sourceLine;
+	std::string sourceFile;
+
 	virtual void Debug(std::ostream& dst, int indent) const;
 
 	virtual Type GetType(VariableMap const& bindings) const = 0;
