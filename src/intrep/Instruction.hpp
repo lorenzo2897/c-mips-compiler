@@ -281,4 +281,16 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
+// *******************************************
+
+class FunctionCallInstruction : public Instruction {
+private:
+	std::string return_result;
+	std::string function_name;
+	std::vector<std::string> arguments;
+public:
+	FunctionCallInstruction(std::string return_result, std::string function_name, std::vector<std::string> arguments);
+	virtual void Debug(std::ostream& dst) const;
+};
+
 #endif

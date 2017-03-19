@@ -21,3 +21,21 @@ Type FunctionCall::GetType(VariableMap const& bindings) const {
 		throw compile_error("function " + function_name + " is not declared", sourceFile, sourceLine);
 	}
 }
+
+std::string FunctionCall::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	std::string return_result = unique((std::string)"fn_ret");
+	stack[return_result] = GetType(bindings);
+	std::vector<std::string> arg_registers;
+	// evaluate all of the arguments
+	for(std::vector<Expression*>::const_iterator itr = args.begin(); itr != args.end(); ++itr) {
+		std::string res = (*itr)->MakeIR(bindings, stack, out);
+		arg_registers.push_back(res);
+	}
+	// emit function call
+	out.push_back(new FunctionCallInstruction(return_result, function_name, arg_registers));
+	return return_result;
+}
+
+std::string FunctionCall::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error("cannot use function call as an l-value", sourceFile, sourceLine);
+}

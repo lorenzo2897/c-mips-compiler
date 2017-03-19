@@ -271,3 +271,15 @@ CastInstruction::CastInstruction(std::string destination, std::string source, Ty
 void CastInstruction::Debug(std::ostream &dst) const {
 	dst << "    cast " << destination << ", " << source << ", " << cast_type.name() << std::endl;
 }
+
+// *******************************************
+
+FunctionCallInstruction::FunctionCallInstruction(std::string return_result, std::string function_name, std::vector<std::string> arguments)
+: return_result(return_result), function_name(function_name), arguments(arguments) {}
+
+void FunctionCallInstruction::Debug(std::ostream &dst) const {
+	dst << "    call " << function_name << ", returns " << return_result << std::endl;
+	for(std::vector<std::string>::const_iterator itr = arguments.begin(); itr != arguments.end(); ++itr) {
+		dst << "      arg " << *itr << std::endl;
+	}
+}
