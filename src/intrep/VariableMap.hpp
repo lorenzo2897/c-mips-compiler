@@ -40,6 +40,18 @@ struct ArrayType {
 
 };
 
+struct StructureType {
+	std::map<std::string, Type> members;
+
+	unsigned total_size() const {
+		unsigned sum = 0;
+		for(std::map<std::string, Type>::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
+			sum += itr->second.bytes();
+		}
+		return sum;
+	}
+};
+
 // **********************************
 
 class Declaration;
@@ -55,6 +67,8 @@ public:
 };
 
 typedef std::map<std::string, ArrayType> ArrayMap;
+
+typedef std::map<std::string, StructureType> StructureMap;
 
 
 // **********************************

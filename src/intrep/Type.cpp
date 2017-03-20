@@ -76,8 +76,7 @@ unsigned Type::bytes() const {
 		char		1
 		short		2
 		int			4
-		long		8
-		long long	8
+		long		4
 		float		4
 		double		8
 		long double	8
@@ -96,7 +95,7 @@ unsigned Type::bytes() const {
 		} else if(s == "int") {
 			return 4;
 		} else if(s == "long") {
-			return 8;
+			return 4;
 		} else if(s == "float") {
 			return 4;
 		} else if(s == "double") {
@@ -113,13 +112,11 @@ unsigned Type::bytes() const {
 			} else if(second == "int") {
 				return 4;
 			} else if(second == "long") {
-				return 8;
+				return 4;
 			}
 		} else if(first == "long") {
-			if(second == "long") {
-				return 8;
-			} else if(second == "int") {
-				return 8;
+			if(second == "int") {
+				return 4;
 			} else if(second == "double") {
 				return 8;
 			}
@@ -128,26 +125,10 @@ unsigned Type::bytes() const {
 		std::string first = specifiers.at(0);
 		std::string second = specifiers.at(1);
 		std::string third = specifiers.at(2);
-		if(first == "long" && second == "long" && third == "int") {
-			return 8;
-		} else if(first == "unsigned" && second == "long" && third == "int") {
-			return 8;
-		} else if(first == "unsigned" && second == "long" && third == "long") {
-			return 8;
+		if(first == "unsigned" && second == "long" && third == "int") {
+			return 4;
 		} else if(first == "signed" && second == "long" && third == "int") {
-			return 8;
-		} else if(first == "signed" && second == "long" && third == "long") {
-			return 8;
-		}
-	} else if(specifiers.size() == 4) {
-		std::string first = specifiers.at(0);
-		std::string second = specifiers.at(1);
-		std::string third = specifiers.at(2);
-		std::string fourth = specifiers.at(3);
-		if(first == "unsigned" && second == "long" && third == "long" && fourth == "int") {
-			return 8;
-		} else if(first == "signed" && second == "long" && third == "long" && fourth == "int") {
-			return 8;
+			return 4;
 		}
 	}
 

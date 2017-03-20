@@ -16,7 +16,11 @@ void FunctionCall::Debug(std::ostream& dst, int indent) const {
 
 Type FunctionCall::GetType(VariableMap const& bindings) const {
 	if(bindings.count(function_name)) {
-		return bindings.at(function_name).type;
+		if(bindings.at(function_name).is_function) {
+			return bindings.at(function_name).type;
+	} else {
+		throw compile_error("variable " + function_name + " is not a function", sourceFile, sourceLine);
+	}
 	} else {
 		throw compile_error("function " + function_name + " is not declared", sourceFile, sourceLine);
 	}
