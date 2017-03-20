@@ -11,13 +11,23 @@ void MemberAccess::Debug(std::ostream& dst, int indent) const {
 }
 
 Type MemberAccess::GetType(VariableMap const& bindings) const {
+	// dereference if need be
+	Type base_type = base->GetType(bindings);
+	if(dereference) {
+		if(base_type.is_pointer()) {
+			base_type = base_type.dereference();
+		} else {
+			throw compile_error((std::string)"base type '" + base->GetType(bindings).name() + "' is not a pointer. did you mean to use '.' instead?", sourceFile, sourceLine);
+		}
+	}
+
 	// check if the base type is indeed a struct
-	if(!base->GetType(bindings).is_struct()) {
+	if(!base_type.is_struct()) {
 		throw compile_error((std::string)"member reference base type '" + base->GetType(bindings).name() + "' is not a struct or union", sourceFile, sourceLine);
 	}
 
 	// check if the struct exists
-	std::string name = base->GetType(bindings).struct_name();
+	std::string name = base_type.struct_name();
 	if(!structures().count(name)) {
 		throw compile_error((std::string)"struct or union '" + name + "' does not exist", sourceFile, sourceLine);
 	}
@@ -43,14 +53,24 @@ std::string MemberAccess::MakeIR(VariableMap const& bindings, FunctionStack& sta
 std::string MemberAccess::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
 	// gettype already performs all the necessary checks. delegate! :)
 	GetType(bindings);
-	std::string name = base->GetType(bindings).struct_name();
+	std::string name;
+	if(dereference) {
+		name = base->GetType(bindings).dereference().struct_name();
+	} else {
+		name = base->GetType(bindings).struct_name();
+	}
 	StructureType s = structures().at(name);
 
 	// get address of structure
 	std::string b = base->MakeIR(bindings, stack, out);
-	std::string addr = unique("struct_addr");
-	stack[addr] = base->GetType(bindings).addressof();
-	out.push_back(new AddressOfInstruction(addr, b));
+	std::string addr;
+	if(dereference) {
+		addr = b;
+	} else {
+		addr = unique("struct_addr");
+		stack[addr] = base->GetType(bindings).addressof();
+		out.push_back(new AddressOfInstruction(addr, b));
+	}
 	// cast the address to a void pointer (for unit pointer arithmetic)
 	std::string m_addr = unique("offset_addr");
 	stack[m_addr] = Type("void", 1);
