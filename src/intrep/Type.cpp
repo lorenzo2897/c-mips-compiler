@@ -71,6 +71,29 @@ bool Type::is_float() const {
 	return false;
 }
 
+bool Type::is_struct() const {
+	if(is_pointer()) return false;
+
+	if(specifiers.at(0).substr(0, 7) == "struct " || specifiers.at(0).substr(0, 6) == "union ") {
+		return true;
+	}
+
+	return false;
+}
+
+std::string Type::struct_name() const {
+	std::string s = specifiers.at(0);
+	if(s.substr(0, 7) == "struct ") {
+		return s.substr(7);
+	} else if (s.substr(0, 6) == "union ") {
+		return s.substr(6);
+	} else {
+		return "";
+	}
+}
+
+unsigned struct_total_size(std::string name);
+
 unsigned Type::bytes() const {
 	/*  TYPE		SIZE (bytes)
 		char		1
@@ -87,7 +110,7 @@ unsigned Type::bytes() const {
 	if(specifiers.size() == 1) {
 		std::string s = specifiers[0];
 		if(s == "void") {
-			return 1;
+			return 0;
 		} else if(s == "char") {
 			return 1;
 		} else if(s == "short") {
@@ -100,6 +123,10 @@ unsigned Type::bytes() const {
 			return 4;
 		} else if(s == "double") {
 			return 8;
+		} else if(s.substr(0, 7) == "struct ") {
+			return struct_total_size(s.substr(7));
+		} else if (s.substr(0, 6) == "union ") {
+			return struct_total_size(s.substr(6));
 		}
 	} else if(specifiers.size() == 2) {
 		std::string first = specifiers.at(0);

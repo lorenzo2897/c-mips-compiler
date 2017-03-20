@@ -5,6 +5,8 @@
 void ProgramRoot::Debug(std::ostream& dst, int indent) const {
 	dst << std::endl << spaces(indent) << "Program Root!";
 
+	dst << std::endl << spaces(indent) << "Structures: " << std::endl;
+	structures().print(dst);
 	dst << std::endl << spaces(indent) << "Declarations: " << std::endl;
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
 		(*itr)->Debug(dst, indent+2);
@@ -63,6 +65,8 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	// TODO : global variable initialisation
 
 	// generate labels for global variables
+	dst << "# Global structs" << std::endl;
+	structures().print(dst);
 	dst << "# Global arrays" << std::endl;
 	for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
 		dst << (*itr).first << ": (" << (*itr).second.total_size() << ") " << (*itr).second.type.name() << " [" << (*itr).second.elements << "]" << std::endl;

@@ -66,7 +66,7 @@ void ConstantInstruction::Debug(std::ostream &dst) const {
 	<< std::hex << std::setfill('0') << std::setw(8) << dataHi
 	<< " "
 	<< std::hex << std::setfill('0') << std::setw(8) << dataLo
-	<< std::endl;
+	<< std::dec << std::endl;
 }
 
 StringInstruction::StringInstruction(std::string destination, std::string data)
@@ -282,4 +282,13 @@ void FunctionCallInstruction::Debug(std::ostream &dst) const {
 	for(std::vector<std::string>::const_iterator itr = arguments.begin(); itr != arguments.end(); ++itr) {
 		dst << "      arg " << *itr << std::endl;
 	}
+}
+
+// *******************************************
+
+MemberAccessInstruction::MemberAccessInstruction(std::string destination, std::string base, unsigned offset)
+: destination(destination), base(base), offset(offset) {}
+
+void MemberAccessInstruction::Debug(std::ostream &dst) const {
+	dst << "    member " << destination << ", " << base << " + " << offset << std::endl;
 }

@@ -19,6 +19,9 @@ public:
 	bool is_pointer() const;
 	bool is_integer() const;
 	bool is_float() const;
+	bool is_struct() const;
+
+	std::string struct_name() const;
 
 	unsigned bytes() const;
 	bool equals(Type t) const;

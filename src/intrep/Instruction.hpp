@@ -293,4 +293,16 @@ public:
 	virtual void Debug(std::ostream& dst) const;
 };
 
+// *******************************************
+
+class MemberAccessInstruction : public Instruction {
+private:
+	std::string destination;
+	std::string base;
+	unsigned offset;
+public:
+	MemberAccessInstruction(std::string destination, std::string base, unsigned offset);
+	virtual void Debug(std::ostream& dst) const;
+};
+
 #endif

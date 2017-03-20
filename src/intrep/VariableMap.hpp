@@ -24,6 +24,8 @@ struct Binding {
 	}
 };
 
+// **********************************
+
 struct ArrayType {
 	Type type;
 	unsigned elements;
@@ -40,17 +42,45 @@ struct ArrayType {
 
 };
 
+typedef std::map<std::string, ArrayType> ArrayMap;
+
+// **********************************
+
+class Scope;
+
 struct StructureType {
 	std::map<std::string, Type> members;
+	ArrayMap arrays;
+	std::vector<std::string> order;
 
 	unsigned total_size() const {
 		unsigned sum = 0;
 		for(std::map<std::string, Type>::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
 			sum += itr->second.bytes();
 		}
+		for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
+			sum += itr->second.total_size();
+		}
 		return sum;
 	}
+
+	bool member_exists(std::string) const;
+	Type get_member_type(std::string) const;
+	unsigned get_member_offset(std::string) const;
+
+	void add_members(Scope* scope);
+	void Debug(std::ostream& dst) const;
 };
+
+class StructureMap : public std::map<std::string, StructureType> {
+public:
+	void add(std::string name, StructureType s);
+	void print(std::ostream& dst);
+};
+
+StructureMap structures();
+
+unsigned struct_total_size(std::string name);
 
 // **********************************
 
@@ -65,10 +95,6 @@ public:
 
 	void add_bindings(std::vector<Declaration*> const& declarations);
 };
-
-typedef std::map<std::string, ArrayType> ArrayMap;
-
-typedef std::map<std::string, StructureType> StructureMap;
 
 
 // **********************************

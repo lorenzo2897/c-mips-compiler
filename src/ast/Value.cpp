@@ -122,6 +122,10 @@ std::string Value::MakeIR(VariableMap const& bindings, FunctionStack& stack, IRV
 	}
 }
 
+std::string Value::MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const {
+	throw compile_error("cannot use a constant or literal as an l-value");
+}
+
 int32_t Value::evaluate_int(VariableMap const& bindings) const {
 	switch (type) {
 		case V_STRING:
