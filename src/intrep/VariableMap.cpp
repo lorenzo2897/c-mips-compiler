@@ -159,7 +159,7 @@ int EnumType::get_member_value(std::string name) const {
 
 void EnumType::Debug(std::ostream &dst) const {
 	for(std::map<std::string, int>::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
-		dst << itr->first << " = " << itr->second << std::endl;
+		dst << "    " << itr->first << " = " << itr->second << std::endl;
 	}
 }
 
