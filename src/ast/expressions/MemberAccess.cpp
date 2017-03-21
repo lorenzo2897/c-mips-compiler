@@ -17,12 +17,17 @@ Type MemberAccess::GetType(VariableMap const& bindings) const {
 		if(base_type.is_pointer()) {
 			base_type = base_type.dereference();
 		} else {
-			throw compile_error((std::string)"base type '" + base->GetType(bindings).name() + "' is not a pointer. did you mean to use '.' instead?", sourceFile, sourceLine);
+			throw compile_error((std::string)"base type '" + base->GetType(bindings).name() + "' is not a pointer; did you mean to use '.' instead?", sourceFile, sourceLine);
 		}
 	}
 
 	// check if the base type is indeed a struct
 	if(!base_type.is_struct()) {
+		if(base_type.is_pointer()) {
+			if(base_type.dereference().is_struct()) {
+				throw compile_error((std::string)"base type '" + base->GetType(bindings).name() + "' is a pointer; did you mean to use '->' instead?", sourceFile, sourceLine);
+			}
+		}
 		throw compile_error((std::string)"member reference base type '" + base->GetType(bindings).name() + "' is not a struct or union", sourceFile, sourceLine);
 	}
 
