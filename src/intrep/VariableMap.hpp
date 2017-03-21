@@ -84,6 +84,30 @@ unsigned struct_total_size(std::string name);
 
 // **********************************
 
+struct EnumType {
+	EnumType();
+
+	std::map<std::string, int> members;
+	int next_member;
+
+	bool member_exists(std::string name) const;
+	int get_member_value(std::string name) const;
+
+	void add(std::string name);
+	void add(std::string name, int value);
+	void Debug(std::ostream& dst) const;
+};
+
+class EnumMap : public std::map<std::string, EnumType> {
+public:
+	void add(std::string name, EnumType s);
+	void print(std::ostream& dst);
+};
+
+EnumMap enums();
+
+// **********************************
+
 class Declaration;
 
 class VariableMap : public std::map<std::string, Binding> {

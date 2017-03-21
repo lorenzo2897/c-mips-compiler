@@ -113,14 +113,74 @@ unsigned struct_total_size(std::string name) {
 }
 
 void StructureMap::add(std::string name, StructureType s) {
-	if(_structures.count(name)) {
+	if(count(name)) {
 		throw compile_error("a struct named " + name + " already exists");
 	}
-	_structures[name] = s;
+	(*this)[name] = s;
 }
 void StructureMap::print(std::ostream& dst) {
 	for(const_iterator itr = begin(); itr != end(); ++itr) {
 		dst << "  struct " << itr->first << " {" << std::endl;
+		itr->second.Debug(dst);
+		dst << "  };" << std::endl;
+	}
+}
+
+// **********************************
+
+EnumType::EnumType() : next_member(0) {}
+
+void EnumType::add(std::string name) {
+	if(members.count(name)) {
+		throw compile_error("cannot declare two elements of the same name inside enum");
+	}
+	members[name] = next_member;
+	++next_member;
+}
+
+void EnumType::add(std::string name, int value) {
+	if(members.count(name)) {
+		throw compile_error("cannot declare two elements of the same name inside enum");
+	}
+	members[name] = value;
+	next_member = value + 1;
+}
+
+bool EnumType::member_exists(std::string name) const {
+	return members.count(name);
+}
+
+int EnumType::get_member_value(std::string name) const {
+	if(!members.count(name)) {
+		throw compile_error("enum does not contain a member named " + name);
+	}
+	return members.at(name);
+}
+
+void EnumType::Debug(std::ostream &dst) const {
+	for(std::map<std::string, int>::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
+		dst << itr->first << " = " << itr->second << std::endl;
+	}
+}
+
+// **********************************
+
+EnumMap _enums;
+
+EnumMap enums() {
+	return _enums;
+}
+
+void EnumMap::add(std::string name, EnumType s) {
+	if(count(name)) {
+		throw compile_error("an enum named " + name + " already exists");
+	}
+	(*this)[name] = s;
+}
+
+void EnumMap::print(std::ostream& dst) {
+	for(const_iterator itr = begin(); itr != end(); ++itr) {
+		dst << "  enum " << itr->first << " {" << std::endl;
 		itr->second.Debug(dst);
 		dst << "  };" << std::endl;
 	}
