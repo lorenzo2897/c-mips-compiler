@@ -51,15 +51,15 @@ void ProgramRoot::add(Node* node) {
 void ProgramRoot::CompileIR(std::ostream &dst) const {
 	dst << std::endl << "# Intermediate representation generated using lscc" << std::endl << std::endl;
 
-	VariableMap bindings;
+	VariableMap global_bindings;
 	ArrayMap arrays;
 
 	// populate map with global varaibles
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
-		if(bindings.count((*itr)->identifier)) {
+		if(global_bindings.count((*itr)->identifier)) {
 			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
 		}
-		bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
+		global_bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
 		if((*itr)->is_array()) {
 			arrays[(std::string)"var_" + (*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
 		}
@@ -76,13 +76,13 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		dst << (*itr).first << ": (" << (*itr).second.total_size() << ") " << (*itr).second.type.name() << " [" << (*itr).second.elements << "]" << std::endl;
 	}
 	dst << "# Global variables" << std::endl;
-	for(VariableMap::const_iterator itr = bindings.begin(); itr != bindings.end(); ++itr) {
+	for(VariableMap::const_iterator itr = global_bindings.begin(); itr != global_bindings.end(); ++itr) {
 		dst << (*itr).second.alias << ": (" << (*itr).second.type.bytes() << ") " << (*itr).second.type.name() << std::endl;
 	}
 
 	// populate map with function names
 	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
-		if(bindings.count((*itr)->function_name)) {
+		if(global_bindings.count((*itr)->function_name)) {
 			throw compile_error("function " + (*itr)->function_name + " conflicts with another declaration of the same name");
 		}
 		// build a list of function parameters
@@ -90,7 +90,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 		for(std::vector<Declaration*>::const_iterator p = (*itr)->parameters.begin(); p != (*itr)->parameters.end(); ++p) {
 			params.push_back((*p)->var_type);
 		}
-		bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
+		global_bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
 	}
 
 	// generate code for every function
