@@ -57,6 +57,8 @@ bool Type::is_integer() const {
 		return true;
 	}
 
+	if(is_enum()) return true;
+
 	return false;
 }
 
@@ -78,6 +80,14 @@ bool Type::is_struct() const {
 		return true;
 	}
 
+	return false;
+}
+
+bool Type::is_enum() const {
+	if(is_pointer()) return false;
+	if(specifiers.at(0).substr(0, 5) == "enum ") {
+		return true;
+	}
 	return false;
 }
 
@@ -127,6 +137,8 @@ unsigned Type::bytes() const {
 			return struct_total_size(s.substr(7));
 		} else if (s.substr(0, 6) == "union ") {
 			return struct_total_size(s.substr(6));
+		} else if (s.substr(0, 5) == "enum ") {
+			return 4;
 		}
 	} else if(specifiers.size() == 2) {
 		std::string first = specifiers.at(0);

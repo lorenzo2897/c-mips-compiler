@@ -20,6 +20,7 @@ public:
 	bool is_integer() const;
 	bool is_float() const;
 	bool is_struct() const;
+	bool is_enum() const;
 
 	std::string struct_name() const;
 

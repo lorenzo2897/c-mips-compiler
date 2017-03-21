@@ -116,9 +116,9 @@ void StructureMap::add(std::string name, StructureType s) {
 	if(count(name)) {
 		throw compile_error("a struct named " + name + " already exists");
 	}
-	(*this)[name] = s;
+	_structures[name] = s;
 }
-void StructureMap::print(std::ostream& dst) {
+void StructureMap::print(std::ostream& dst) const {
 	for(const_iterator itr = begin(); itr != end(); ++itr) {
 		dst << "  struct " << itr->first << " {" << std::endl;
 		itr->second.Debug(dst);
@@ -175,16 +175,32 @@ void EnumMap::add(std::string name, EnumType s) {
 	if(count(name)) {
 		throw compile_error("an enum named " + name + " already exists");
 	}
-	(*this)[name] = s;
+	_enums[name] = s;
 }
 
-void EnumMap::print(std::ostream& dst) {
+void EnumMap::print(std::ostream& dst) const {
 	for(const_iterator itr = begin(); itr != end(); ++itr) {
 		dst << "  enum " << itr->first << " {" << std::endl;
 		itr->second.Debug(dst);
 		dst << "  };" << std::endl;
 	}
 }
+
+bool EnumMap::value_exists(std::string name) const {
+	for(const_iterator itr = begin(); itr != end(); ++itr) {
+		if(itr->second.member_exists(name)) return true;
+	}
+	return false;
+}
+
+int EnumMap::get_value(std::string name) const {
+	for(const_iterator itr = begin(); itr != end(); ++itr) {
+		if(itr->second.member_exists(name)) return itr->second.get_member_value(name);
+	}
+	throw compile_error("no enum value with this name exists: " + name);
+}
+
+enumerator_entry::enumerator_entry(std::string name, int val, bool with_val) : name(name), val(val), with_val(with_val) {}
 
 // **********************************
 

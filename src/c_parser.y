@@ -23,6 +23,8 @@
   std::vector<std::string>* strvector;
   std::vector<Expression*>* expvector;
   TypeSuffix* typesuffix;
+  enumerator_entry* enumentry;
+  EnumType* enumlist;
   Node* ast_node;
 }
 
@@ -55,12 +57,14 @@
 
 %type <s> IDENTIFIER TypeSpecifier
 %type <c> AssignmentOperator UnaryOperator
-%type <i> Pointer
+%type <i> Pointer EnumValue
 %type <typesuffix> TypeSuffix
-%type <s> StructureDeclaration
+%type <enumentry> Enumerator
+%type <enumlist> EnumeratorList
+%type <s> StructureDeclaration EnumDeclaration
 %type <strvector> DeclarationSpecifiers
 %type <expvector> FunctionArgumentList
-%type <ast_node> ProgramRoot TopLevelDeclaration DeclarationList Declaration Declarator Initialiser InitialiserList InitialiserListValue Function FunctionParameterList Value
+%type <ast_node> ProgramRoot TopLevelDeclaration DeclarationList Declaration Declarator Initialiser InitialiserList Function FunctionParameterList Value
 %type <ast_node> InnerDeclarationBlock StatementBlock Statement CompoundStatement
 %type <ast_node> ExpressionStatement LabeledStatement SwitchStatement WhileStatement ForStatement ReturnStatement BreakStatement GotoStatement IfStatement
 %type <ast_node> Expression AssignmentExpression TernaryExpression LogicalOrExpression LogicalAndExpression BitwiseOrExpression BitwiseXorExpression BitwiseAndExpression
@@ -103,8 +107,8 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						dynamic_cast<Function*>$$->return_type.specifiers = *$1;
 					}
 					| DeclarationSpecifiers ';' {
-						// this is for the benefit of named structs with no instances
-						if($1->at(0).substr(0, 7) == "struct " || $1->at(0).substr(0, 6) == "union ") {
+						// this is for the benefit of named structs/unions/enums with no instances
+						if($1->at(0).substr(0, 7) == "struct " || $1->at(0).substr(0, 6) == "union " || $1->at(0).substr(0, 5) == "enum ") {
 							$$ = NULL;
 						} else {
 							yyerror("syntax error: must name an identifier after a type");
@@ -113,9 +117,9 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 
 DeclarationSpecifiers : TypeSpecifier {
 					  	  $$ = new std::vector<std::string>;
-						  $$->push_back($1);
+						  if($1 != NULL) $$->push_back($1);
 					  }
-					  | DeclarationSpecifiers TypeSpecifier { $$->push_back($2); }
+					  | DeclarationSpecifiers TypeSpecifier { if($1 != NULL) $$->push_back($2); }
 
 TypeSpecifier	: TVOID { $$ = strdup("void"); }
 				| TLONG { $$ = strdup("long"); }
@@ -126,13 +130,14 @@ TypeSpecifier	: TVOID { $$ = strdup("void"); }
 				| TDOUBLE { $$ = strdup("double"); }
 				| SIGNED { $$ = strdup("signed"); }
 				| UNSIGNED { $$ = strdup("unsigned"); }
-				| CONST { $$ = strdup("const"); }
-				| VOLATILE { $$ = strdup("volatile"); }
-				| EXTERN { $$ = strdup("extern"); }
-				| STATIC { $$ = strdup("static"); }
-				| AUTO { $$ = strdup("auto"); }
-				| REGISTER { $$ = strdup("register"); }
+				| CONST { $$ = NULL; }
+				| VOLATILE { $$ = NULL; }
+				| EXTERN { $$ = NULL; }
+				| STATIC { $$ = NULL; }
+				| AUTO { $$ = NULL; }
+				| REGISTER { $$ = NULL; }
 				| StructureDeclaration { $$ = $1; }
+				| EnumDeclaration { $$ = $1; }
 
 
 TypeSuffix	: Pointer { $$ = new TypeSuffix(1, $1); }
@@ -187,16 +192,14 @@ Initialiser : AssignmentExpression
 			| OPENBRACE InitialiserList CLOSEBRACE { $$ = $2; }
 			| OPENBRACE InitialiserList ',' CLOSEBRACE { $$ = $2; }
 
-InitialiserList	: InitialiserListValue {
+InitialiserList	: AssignmentExpression {
 					$$ = new InitialiserList();
 					dynamic_cast<InitialiserList*>$$->add(dynamic_cast<Expression*>$1);
 				}
-				| InitialiserList ',' InitialiserListValue {
+				| InitialiserList ',' AssignmentExpression {
 					$$ = $1;
 					dynamic_cast<InitialiserList*>$$->add(dynamic_cast<Expression*>$3);
 				}
-
-InitialiserListValue	: AssignmentExpression
 
 StructureDeclaration	: StructOrUnion IDENTIFIER OPENBRACE InnerDeclarationBlock CLOSEBRACE {
 							StructureType s;
@@ -217,9 +220,56 @@ StructureDeclaration	: StructOrUnion IDENTIFIER OPENBRACE InnerDeclarationBlock 
 							$$ = strdup(((std::string)"struct " + $2).c_str());
 						}
 
-StructOrUnion
-	: STRUCT
-	| UNION
+StructOrUnion	: STRUCT
+				| UNION
+
+EnumDeclaration	: ENUM OPENBRACE EnumeratorList CLOSEBRACE {
+					// invent a name for this
+					std::string name = unique("anonymous");
+					enums().add(name, *$3);
+					delete $3;
+					$$ = strdup(((std::string)"enum " + name).c_str());
+				}
+				| ENUM IDENTIFIER OPENBRACE EnumeratorList CLOSEBRACE {
+					std::string name = $2;
+					enums().add(name, *$4);
+					delete $4;
+					$$ = strdup(((std::string)"enum " + name).c_str());
+				}
+				| ENUM IDENTIFIER {
+					$$ = strdup(((std::string)"enum " + $2).c_str());
+				}
+
+EnumeratorList	: Enumerator {
+					$$ = new EnumType();
+					if($1->with_val) {
+						$$->add($1->name, $1->val);
+					} else {
+						$$->add($1->name);
+					}
+					delete $1;
+				}
+				| EnumeratorList ',' Enumerator {
+					if($3->with_val) {
+						$$->add($3->name, $3->val);
+					} else {
+						$$->add($3->name);
+					}
+					delete $3;
+				}
+
+Enumerator	: IDENTIFIER { $$ = new enumerator_entry($1, 0, false); }
+			| IDENTIFIER '=' EnumValue { $$ = new enumerator_entry($1, $3, true); }
+
+EnumValue	: DECINT { $$ = $1; }
+			| HEXINT { $$ = $1; }
+			| OCTINT { $$ = $1; }
+			| '-' DECINT { $$ = -$2; }
+			| '-' HEXINT { $$ = -$2; }
+			| '-' OCTINT { $$ = -$2; }
+			| '+' DECINT { $$ = $2; }
+			| '+' HEXINT { $$ = $2; }
+			| '+' OCTINT { $$ = $2; }
 
 Function : Declarator '(' ')' CompoundStatement {
 				$$ = new Function();
@@ -297,16 +347,16 @@ InnerDeclarationBlock : DeclarationSpecifiers DeclarationList ';' {
 						  $$ = $1;
 					  }
 					  | DeclarationSpecifiers ';' {
-						  // this is for the benefit of named structs with no instances
-  						  if($1->at(0).substr(0, 7) == "struct " || $1->at(0).substr(0, 6) == "union ") {
+						  // this is for the benefit of named structs/unions/enums with no instances
+  						  if($1->at(0).substr(0, 7) == "struct " || $1->at(0).substr(0, 6) == "union " || $1->at(0).substr(0, 5) == "enum ") {
   							$$ = new Scope;
   						  } else {
   							yyerror("syntax error: must name an identifier after a type");
   						  }
 					  }
 					  | InnerDeclarationBlock DeclarationSpecifiers ';' {
-						  // this is for the benefit of named structs with no instances
-  						  if($2->at(0).substr(0, 7) == "struct " || $2->at(0).substr(0, 6) == "union ") {
+						  // this is for the benefit of named structs/unions/enums with no instances
+  						  if($2->at(0).substr(0, 7) == "struct " || $2->at(0).substr(0, 6) == "union " || $2->at(0).substr(0, 5) == "enum ") {
   							$$ = $1;
   						  } else {
   							yyerror("syntax error: must name an identifier after a type");

@@ -75,7 +75,7 @@ struct StructureType {
 class StructureMap : public std::map<std::string, StructureType> {
 public:
 	void add(std::string name, StructureType s);
-	void print(std::ostream& dst);
+	void print(std::ostream& dst) const;
 };
 
 StructureMap structures();
@@ -101,10 +101,21 @@ struct EnumType {
 class EnumMap : public std::map<std::string, EnumType> {
 public:
 	void add(std::string name, EnumType s);
-	void print(std::ostream& dst);
+	void print(std::ostream& dst) const;
+
+	bool value_exists(std::string name) const;
+	int get_value(std::string name) const;
 };
 
 EnumMap enums();
+
+struct enumerator_entry {
+	// temporary structure used for parser only
+	std::string name;
+	int val;
+	bool with_val;
+	enumerator_entry(std::string, int, bool);
+};
 
 // **********************************
 
