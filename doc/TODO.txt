@@ -3,25 +3,15 @@ lexer and parser
 
 floating points:
 	better parsing. currently all interpreted as doubles and then truncated
-integers:
-	add support for storage sizes and signed types
 chars and strings:
 	wide characters, L and u prefixes
 declarations:
-	better matching (pointers, etc)
 	arrays with size given by an expression such as 4*4 instead of constant value
 	InitialiserList should work with nested braces such as {{1, 2}, {3, 4}}
-structs and unions:
-	recognise as type instead of variable name
-	allow in type name declarations
-	implement sizeof
-enum:
-	implement
-	recognise as type name
 function calls:
 	allow more than just calling by identifier
 	e.g. pointer to a function
-	parameter list in function declarations (...)
+	variable parameter list in function declarations (...)
 
 
 testing

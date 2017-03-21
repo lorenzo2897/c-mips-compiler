@@ -97,7 +97,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	dst << std::endl;
 	dst << "# Functions" << std::endl << std::endl;
 	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
-		(*itr)->CompileIR(bindings, dst);
+		(*itr)->CompileIR(global_bindings, dst);
 	}
 }
 

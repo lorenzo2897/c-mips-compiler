@@ -55,7 +55,12 @@ Type StructureType::get_member_type(std::string name) const {
 }
 
 unsigned StructureType::get_member_offset(std::string name) const {
-	std::vector<std::string>::const_iterator end = std::find(order.begin(), order.end(), name);
+	std::vector<std::string>::const_iterator end;
+	for(end = order.begin(); end != order.end(); ++end) {
+		if(*end == name) {
+			break;
+		}
+	}
 	if(end == order.end()) {
 		throw compile_error((std::string)"struct or union does not have a member named '" + name + "'");
 	}
