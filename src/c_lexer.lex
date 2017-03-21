@@ -10,6 +10,7 @@
 
 #include "ast/Node.hpp"
 #include "ast/Expression.hpp"
+#include "intrep/VariableMap.hpp"
 
 #include "c_parser.tab.hpp"
 
@@ -250,6 +251,9 @@ IDENTIFIER [A-Za-z_][0-9A-Za-z_]*
 {IDENTIFIER}		{ token_list.push_back(TokenEntry(yytext, "Identifier", "Identifier"));
 					yylval.s = strdup(yytext);
 					COUNTCOL;
+					if(typedefs_exists(yytext)) {
+						return TYPE_ALIAS;
+					}
 					return IDENTIFIER; }
 
 .					{

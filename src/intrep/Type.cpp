@@ -1,14 +1,35 @@
 #include "Type.hpp"
 #include "../CompileError.hpp"
 
+/* begin variablemap section */
+void typedefs_define(std::string alias, Type type);
+bool typedefs_exists(std::string alias);
+Type typedefs_get(std::string alias);
+/* end variablemap section */
+
 Type::Type() : pointer_depth(0) {}
 
-Type::Type(std::vector<std::string> specifiers, int pointer_depth) : specifiers(specifiers), pointer_depth(pointer_depth) {
-	bytes(); // check if type string is valid
+Type::Type(std::vector<std::string> specifiers, int pointer_depth) : pointer_depth(pointer_depth) {
+	set_specifiers(specifiers);
 }
 
 Type::Type(std::string specifier, int pointer_depth) : pointer_depth(pointer_depth) {
-	specifiers.push_back(specifier);
+	std::vector<std::string> spec_vector;
+	spec_vector.push_back(specifier);
+	set_specifiers(spec_vector);
+}
+
+void Type::set_specifiers(std::vector<std::string> s) {
+	if(s.size() == 1) {
+		std::string first = s.at(0);
+		if(typedefs_exists(first)) {
+			Type aliased = typedefs_get(first);
+			pointer_depth += aliased.pointer_depth;
+			specifiers = aliased.specifiers;
+			return;
+		}
+	}
+	specifiers = s;
 	bytes(); // check if type string is valid
 }
 

@@ -47,7 +47,7 @@
 %token LESSTHAN GREATERTHAN EQUALS NOTEQUALS LESSOREQUAL MOREOREQUAL
 
 %token OCTINT DECINT HEXINT FLOATINGPOINT FLOATINGDOUBLE
-%token CHARLITERAL STRINGLITERAL IDENTIFIER
+%token CHARLITERAL STRINGLITERAL IDENTIFIER TYPE_ALIAS
 
 %type <s> STRINGLITERAL
 %type <c> CHARLITERAL
@@ -55,7 +55,7 @@
 %type <f> FLOATINGPOINT
 %type <d> FLOATINGDOUBLE
 
-%type <s> IDENTIFIER TypeSpecifier
+%type <s> IDENTIFIER TYPE_ALIAS TypeSpecifier
 %type <c> AssignmentOperator UnaryOperator
 %type <i> Pointer EnumValue
 %type <typesuffix> TypeSuffix
@@ -88,7 +88,7 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						$$ = $2;
 						// add in the specifiers for each declaration in the list
 						for(int i = 0; i < dynamic_cast<Scope*>$$->declarations.size(); i++) {
-							dynamic_cast<Scope*>$$->declarations[i]->var_type.specifiers = *$1;
+							dynamic_cast<Scope*>$$->declarations[i]->var_type = Type(*$1, dynamic_cast<Scope*>$$->declarations[i]->var_type.pointer_depth);
 						}
 					}
 					| DeclarationSpecifiers Declarator '(' ')' ';' {
@@ -104,7 +104,7 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						// function definition
 						$$ = $2;
 						// add in the specifiers for the function type
-						dynamic_cast<Function*>$$->return_type.specifiers = *$1;
+						dynamic_cast<Function*>$$->return_type = Type(*$1, dynamic_cast<Function*>$$->return_type.pointer_depth);
 					}
 					| DeclarationSpecifiers ';' {
 						// this is for the benefit of named structs/unions/enums with no instances
@@ -113,6 +113,14 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						} else {
 							yyerror("syntax error: must name an identifier after a type");
 						}
+					}
+					| TYPEDEF DeclarationSpecifiers IDENTIFIER ';' {
+						// add definition
+						typedefs_define($3, Type(*$2, 0));
+					}
+					| TYPEDEF DeclarationSpecifiers TypeSuffix IDENTIFIER ';' {
+						// add definition
+						typedefs_define($4, Type(*$2, $3->depth));
 					}
 
 DeclarationSpecifiers : TypeSpecifier {
@@ -138,6 +146,7 @@ TypeSpecifier	: TVOID { $$ = strdup("void"); }
 				| REGISTER { $$ = NULL; }
 				| StructureDeclaration { $$ = $1; }
 				| EnumDeclaration { $$ = $1; }
+				| TYPE_ALIAS { $$ = $1; }
 
 
 TypeSuffix	: Pointer { $$ = new TypeSuffix(1, $1); }
@@ -303,12 +312,12 @@ Function : Declarator '(' ')' CompoundStatement {
 
 FunctionParameterList	: DeclarationSpecifiers Declarator {
 							$$ = new Scope();
-							dynamic_cast<Declaration*>$2->var_type.specifiers = *$1;
+							dynamic_cast<Declaration*>$2->var_type.set_specifiers(*$1);
 							dynamic_cast<Scope*>$$->declare(dynamic_cast<Declaration*>$2);
 						}
 						| FunctionParameterList ',' DeclarationSpecifiers Declarator {
 							$$ = $1;
-							dynamic_cast<Declaration*>$4->var_type.specifiers = *$3;
+							dynamic_cast<Declaration*>$4->var_type.set_specifiers(*$3);
 							dynamic_cast<Scope*>$$->declare(dynamic_cast<Declaration*>$4);
 						}
 
@@ -323,8 +332,7 @@ InnerDeclarationBlock : DeclarationSpecifiers DeclarationList ';' {
 
 						  // add in the specifiers for each declaration in the list
 						  for(int i = 0; i < d->declarations.size(); i++) {
-							  d->declarations[i]->var_type.specifiers = *$1;
-							  d->declarations[i]->var_type.bytes(); // this performs type verification
+							  d->declarations[i]->var_type.set_specifiers(*$1);
 						  }
 
 						  // set the new declarationblock to be the declaration list
@@ -336,8 +344,7 @@ InnerDeclarationBlock : DeclarationSpecifiers DeclarationList ';' {
 
 						  // set the specifiers for the new declarations
 						  for(int i = 0; i < d->declarations.size(); i++) {
-							  d->declarations[i]->var_type.specifiers = *$2;
-							  d->declarations[i]->var_type.bytes(); // this performs type verification
+							  d->declarations[i]->var_type.set_specifiers(*$2);
 						  }
 
 						  // add the new declarations into the existing list
@@ -418,7 +425,7 @@ ForStatement	: FOR '(' ExpressionStatement ExpressionStatement ')' Statement {
 					Scope* s = dynamic_cast<Scope*>$4;
 					// add in the specifiers for each declaration in the list
 					for(int i = 0; i < s->declarations.size(); i++) {
-						s->declarations[i]->var_type.specifiers = *$3;
+						s->declarations[i]->var_type.set_specifiers(*$3);
 					}
 					dynamic_cast<ForStatement*>$$->merge_declarations(s);
 				}
@@ -427,7 +434,7 @@ ForStatement	: FOR '(' ExpressionStatement ExpressionStatement ')' Statement {
 					Scope* s = dynamic_cast<Scope*>$4;
 					// add in the specifiers for each declaration in the list
 					for(int i = 0; i < s->declarations.size(); i++) {
-						s->declarations[i]->var_type.specifiers = *$3;
+						s->declarations[i]->var_type.set_specifiers(*$3);
 					}
 					dynamic_cast<ForStatement*>$$->merge_declarations(s);
 				}
@@ -526,6 +533,7 @@ CastExpression	: UnaryExpression { $$ = $1; }
 					$$ = new CastExpression($2, 0, dynamic_cast<Expression*>$4);
 				}
 				| '(' TypeSpecifier TypeSuffix ')' CastExpression {
+					// TODO: add more TypeSpecifiers
 					$$ = new CastExpression($2, $3->depth, dynamic_cast<Expression*>$5);
 				}
 

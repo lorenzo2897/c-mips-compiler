@@ -204,6 +204,28 @@ enumerator_entry::enumerator_entry(std::string name, int val, bool with_val) : n
 
 // **********************************
 
+std::map<std::string, Type> _typedefs;
+
+void typedefs_define(std::string alias, Type type) {
+	if(_typedefs.count(alias)) {
+		throw compile_error((std::string)"a typedef with the alias '" + alias + "' already exists");
+	}
+	_typedefs[alias] = type;
+}
+
+bool typedefs_exists(std::string alias) {
+	return _typedefs.count(alias);
+}
+
+Type typedefs_get(std::string alias) {
+	if(!_typedefs.count(alias)) {
+		throw compile_error((std::string)"there is no typedef with the alias '" + alias + "'");
+	}
+	return _typedefs.at(alias);
+}
+
+// **********************************
+
 void FunctionStack::add_variables(VariableMap const& aliases, std::vector<Declaration*> const& declarations) {
 	// add all declarations to the stack by their corresponding aliases
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {

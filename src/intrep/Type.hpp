@@ -5,14 +5,16 @@
 #include <string>
 
 class Type {
+	std::vector<std::string> specifiers;
 
 public:
-	std::vector<std::string> specifiers;
 	int pointer_depth;
 
 	Type();
 	Type(std::string specifier, int pointer_depth);
 	Type(std::vector<std::string> specifiers, int pointer_depth);
+
+	void set_specifiers(std::vector<std::string> s);
 
 
 	std::string name() const;

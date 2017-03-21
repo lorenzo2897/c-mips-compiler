@@ -119,6 +119,12 @@ struct enumerator_entry {
 
 // **********************************
 
+void typedefs_define(std::string alias, Type type);
+bool typedefs_exists(std::string alias);
+Type typedefs_get(std::string alias);
+
+// **********************************
+
 class Declaration;
 
 class VariableMap : public std::map<std::string, Binding> {
