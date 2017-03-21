@@ -76,17 +76,11 @@ std::string MemberAccess::MakeIR_lvalue(VariableMap const& bindings, FunctionSta
 		stack[addr] = base->GetType(bindings).addressof();
 		out.push_back(new AddressOfInstruction(addr, b));
 	}
-	// cast the address to a void pointer (for unit pointer arithmetic)
-	std::string m_addr = unique("offset_addr");
-	stack[m_addr] = Type("void", 1);
-	out.push_back(new CastInstruction(m_addr, addr, Type("void", 1)));
 	// add the member's byte offset
+	std::string m_addr = unique("member_addr");
+	stack[m_addr] = GetType(bindings).addressof();
 	unsigned offset = s.get_member_offset(member);
-	out.push_back(new MemberAccessInstruction(m_addr, m_addr, offset));
-	// cast the address into a pointer of the type of the member
-	std::string cast_addr = unique("member_addr");
-	stack[cast_addr] = GetType(bindings).addressof();
-	out.push_back(new CastInstruction(cast_addr, m_addr, GetType(bindings).addressof()));
+	out.push_back(new MemberAccessInstruction(m_addr, addr, offset));
 
-	return cast_addr;
+	return m_addr;
 }
