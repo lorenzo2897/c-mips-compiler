@@ -36,8 +36,18 @@ struct ArrayType {
 	: type(type), elements(elements) {
 	}
 
+	unsigned stride() const {
+		if(type.bytes() == 1 || type.bytes() == 2 || type.bytes() == 4) {
+			return type.bytes();
+		} else {
+			unsigned s = type.bytes();
+			align_address(s, 4);
+			return s;
+		}
+	}
+
 	unsigned total_size() const {
-		return type.bytes() * elements;
+		return stride() * elements;
 	}
 
 };
@@ -54,14 +64,7 @@ struct StructureType {
 	std::vector<std::string> order;
 
 	unsigned total_size() const {
-		unsigned sum = 0;
-		for(std::map<std::string, Type>::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
-			sum += itr->second.bytes();
-		}
-		for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
-			sum += itr->second.total_size();
-		}
-		return sum;
+		return get_member_offset(order.back()) + get_member_type(order.back()).bytes();
 	}
 
 	bool member_exists(std::string) const;

@@ -127,7 +127,7 @@ DeclarationSpecifiers : TypeSpecifier {
 					  	  $$ = new std::vector<std::string>;
 						  if($1 != NULL) $$->push_back($1);
 					  }
-					  | DeclarationSpecifiers TypeSpecifier { if($1 != NULL) $$->push_back($2); }
+					  | DeclarationSpecifiers TypeSpecifier { if($2 != NULL) $$->push_back($2); }
 
 TypeSpecifier	: TVOID { $$ = strdup("void"); }
 				| TLONG { $$ = strdup("long"); }

@@ -11,6 +11,9 @@
 
 class ProgramRoot : public Scope {
 
+	void populate_declarations(VariableMap& bindings, ArrayMap& arrays) const;
+	void populate_functions(VariableMap& bindings) const;
+
 protected:
 	std::vector<Function*> functions;
 

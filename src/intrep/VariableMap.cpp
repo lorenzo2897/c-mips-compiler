@@ -68,10 +68,18 @@ unsigned StructureType::get_member_offset(std::string name) const {
 	unsigned sum = 0;
 	for(std::vector<std::string>::const_iterator itr = order.begin(); itr != end; ++itr) {
 		if(members.count(*itr)) {
+			align_address(sum, members.at(*itr).bytes());
 			sum += members.at(*itr).bytes();
 		} else if(arrays.count(*itr)) {
+			align_address(sum, 4);
 			sum += arrays.at(*itr).total_size();
 		}
+	}
+	// add alignment for request element
+	if(members.count(name)) {
+		align_address(sum, members.at(name).bytes());
+	} else if(arrays.count(name)) {
+		align_address(sum, 4);
 	}
 	return sum;
 }

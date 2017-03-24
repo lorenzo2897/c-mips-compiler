@@ -35,4 +35,6 @@ public:
 
 };
 
+void align_address(unsigned& address, unsigned alignment, unsigned max_alignment = 4);
+
 #endif

@@ -45,7 +45,7 @@ Node* ast_root;
 
 int main(int argc, char const *argv[]) {
 	// parse command-line arguments
-	int mode = MODE_IR;
+	int mode = MODE_COMPILE;
 	std::string infile;
 	std::string outfile;
 	yydebug = 0;

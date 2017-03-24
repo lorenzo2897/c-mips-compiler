@@ -51,17 +51,11 @@ void Function::PrintXML(std::ostream& dst, int indent) const {
 	dst << spaces(indent) << "</Function>" << std::endl;
 }
 
-void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
-	FunctionStack stack;
-	IRVector out;
-
+void Function::make_instructions(VariableMap& bindings, FunctionStack& stack, IRVector& out) const {
 	// populate the bindings with the function parameters and declarations
 	bindings.add_bindings(parameters);
-	stack.add_variables(bindings, parameters);
 	bindings.add_bindings(declarations);
 	stack.add_variables(bindings, declarations);
-
-	// TODO: bring parameters onto the stack
 
 	// generate instructions for initialisers
 	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
@@ -72,6 +66,12 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 	for(std::vector<Statement*>::const_iterator itr = statements.begin(); itr != statements.end(); ++itr) {
 		(*itr)->MakeIR(bindings, stack, out);
 	}
+}
+
+void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
+	FunctionStack stack;
+	IRVector out;
+	make_instructions(bindings, stack, out);
 
 	// print IR in text form
 	dst << function_name << ":" << std::endl;
@@ -92,4 +92,90 @@ void Function::CompileIR(VariableMap bindings, std::ostream &dst) const {
 
 	dst << "    # end " << function_name << std::endl;
 	dst << std::endl;
+}
+
+void debug_stack_allocations(std::map<std::string, unsigned> const& array_addresses,
+							std::map<std::string, unsigned> const& stack_offsets,
+							unsigned stack_size,
+							unsigned param_stack)
+							{
+	for(unsigned addr = 0; addr < param_stack; addr++) {
+		if(addr == stack_size) {
+			std::cerr << " -----\n";
+		}
+		std::cerr << addr << ": ";
+		for(std::map<std::string, unsigned>::const_iterator itr = array_addresses.begin(); itr != array_addresses.end(); ++itr) {
+			if(itr->second == addr) {
+				std::cerr << itr->first;
+			}
+		}
+		for(std::map<std::string, unsigned>::const_iterator itr = stack_offsets.begin(); itr != stack_offsets.end(); ++itr) {
+			if(itr->second == addr) {
+				std::cerr << itr->first;
+			}
+		}
+		if(addr == stack_size - 4) {
+			std::cerr << " frame pointer";
+		}
+		std::cerr << "\n";
+	}
+}
+
+void Function::CompileMIPS(VariableMap bindings, std::ostream &dst) const {
+	FunctionStack stack;
+	IRVector out;
+	make_instructions(bindings, stack, out);
+
+	// figure out where things are going to be on the stack
+	std::map<std::string, unsigned> array_addresses;
+	std::map<std::string, unsigned> stack_offsets;
+	unsigned stack_size = 0;
+	for(ArrayMap::const_iterator itr = stack.arrays.begin(); itr != stack.arrays.end(); ++itr) {
+		align_address(stack_size, 4);
+		array_addresses[(*itr).first] = stack_size;
+		stack_size += (*itr).second.total_size();
+	}
+	for(FunctionStack::const_iterator itr = stack.begin(); itr != stack.end(); ++itr) {
+		align_address(stack_size, (*itr).second.bytes());
+		stack_offsets[(*itr).first] = stack_size;
+		stack_size += (*itr).second.bytes();
+	}
+	stack_size += 4;
+
+	// stack must be 8-byte aligned
+	align_address(stack_size, 8, 8);
+
+	// assign locations in the stack to function parameters
+	unsigned parameters_stack = stack_size;
+	for(std::vector<Declaration*>::const_iterator itr = parameters.begin(); itr != parameters.end(); ++itr) {
+		std::string param_alias = bindings.at((*itr)->identifier).alias;
+		align_address(parameters_stack, ((*itr)->var_type.is_float() && (*itr)->var_type.bytes() == 8) ? 8 : 4, 8);
+		stack_offsets[param_alias] = parameters_stack;
+		parameters_stack += (*itr)->var_type.bytes();
+	}
+
+	// print MIPS assembly code
+	dst << "    .globl " << function_name << "\n    .align 4\n";
+	dst << function_name << ":\n";
+
+	// function header
+	dst << "    addiu   $sp, $sp, -" << stack_size << "\n"; // allocate stack
+	dst << "    sw      $fp, " << (stack_size - 4) << "($sp)" << "\n"; // store previous frame pointer on stack
+	dst << "    move    $fp, $sp\n"; // create new frame pointer
+
+	// bring parameters onto the stack
+	dst << "    sw      $4, " << stack_size << "($fp)\n";
+	dst << "    sw      $5, " << (stack_size+4) << "($fp)\n";
+	dst << "    sw      $6, " << (stack_size+8) << "($fp)\n";
+	dst << "    sw      $7, " << (stack_size+12) << "($fp)\n";
+	/* */
+	debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+	/* */
+	dst << "    move    $sp, $fp\n"; // get back the base stack pointer
+	dst << "    lw      $fp, " << (stack_size - 4) << "($sp)" << "\n"; // load previous frame pointer
+	dst << "    addiu   $sp, $sp, " << stack_size << "\n"; // release allocated stack
+	dst << "    j       $31\n"; // release allocated stack
+	dst << "    nop\n"; // delay slot
+
+	dst << "\n";
 }

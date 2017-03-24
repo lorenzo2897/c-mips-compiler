@@ -48,6 +48,35 @@ void ProgramRoot::add(Node* node) {
 	}
 }
 
+// *******************************************************
+
+void ProgramRoot::populate_declarations(VariableMap& bindings, ArrayMap& arrays) const {
+	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
+		if(bindings.count((*itr)->identifier)) {
+			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
+		}
+		bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
+		if((*itr)->is_array()) {
+			arrays[(std::string)"var_" + (*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
+		}
+	}
+	// TODO : global variable initialisation
+}
+
+void ProgramRoot::populate_functions(VariableMap& bindings) const {
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		if(bindings.count((*itr)->function_name)) {
+			throw compile_error("function " + (*itr)->function_name + " conflicts with another declaration of the same name");
+		}
+		// build a list of function parameters
+		std::vector<Type> params;
+		for(std::vector<Declaration*>::const_iterator p = (*itr)->parameters.begin(); p != (*itr)->parameters.end(); ++p) {
+			params.push_back((*p)->var_type);
+		}
+		bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
+	}
+}
+
 void ProgramRoot::CompileIR(std::ostream &dst) const {
 	dst << std::endl << "# Intermediate representation generated using lscc" << std::endl << std::endl;
 
@@ -55,16 +84,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	ArrayMap arrays;
 
 	// populate map with global varaibles
-	for(std::vector<Declaration*>::const_iterator itr = declarations.begin(); itr != declarations.end(); ++itr) {
-		if(global_bindings.count((*itr)->identifier)) {
-			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
-		}
-		global_bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
-		if((*itr)->is_array()) {
-			arrays[(std::string)"var_" + (*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
-		}
-	}
-	// TODO : global variable initialisation
+	populate_declarations(global_bindings, arrays);
 
 	// generate labels for global variables
 	dst << "# Global structs" << std::endl;
@@ -81,17 +101,7 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 	}
 
 	// populate map with function names
-	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
-		if(global_bindings.count((*itr)->function_name)) {
-			throw compile_error("function " + (*itr)->function_name + " conflicts with another declaration of the same name");
-		}
-		// build a list of function parameters
-		std::vector<Type> params;
-		for(std::vector<Declaration*>::const_iterator p = (*itr)->parameters.begin(); p != (*itr)->parameters.end(); ++p) {
-			params.push_back((*p)->var_type);
-		}
-		global_bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
-	}
+	populate_functions(global_bindings);
 
 	// generate code for every function
 	dst << std::endl;
@@ -104,4 +114,39 @@ void ProgramRoot::CompileIR(std::ostream &dst) const {
 
 void ProgramRoot::CompileMIPS(std::ostream &dst) const {
 	dst << std::endl << "# MIPS assembly generated using lscc" << std::endl << std::endl;
+
+	VariableMap global_bindings;
+	ArrayMap arrays;
+
+	populate_declarations(global_bindings, arrays);
+
+	// output global variables
+
+	dst << ".data\n\n";
+
+	for(ArrayMap::const_iterator itr = arrays.begin(); itr != arrays.end(); ++itr) {
+		dst << "    .globl " << (*itr).first << "_arr\n    .align 4\n";
+		dst << "  " << (*itr).first << "_arr:\n    .space " << (*itr).second.total_size() << "\n\n";
+	}
+
+	for(VariableMap::const_iterator itr = global_bindings.begin(); itr != global_bindings.end(); ++itr) {
+		if(arrays.count((*itr).second.alias)) {
+			dst << "    .globl " << (*itr).second.alias << "\n    .align 4\n";
+			dst << "  " << (*itr).second.alias << ":\n    .word " << (*itr).second.alias << "_arr\n\n";
+		} else {
+			dst << "    .globl " << (*itr).second.alias << "\n    .align 4\n";
+			dst << "  " << (*itr).second.alias << ":\n    .space " << (*itr).second.type.bytes() << "\n\n";
+			// TODO: initialise these global vars
+		}
+	}
+
+	populate_functions(global_bindings);
+
+	// generate code for every function
+	dst << std::endl;
+	dst << ".text\n\n";
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		(*itr)->CompileMIPS(global_bindings, dst);
+	}
+
 }

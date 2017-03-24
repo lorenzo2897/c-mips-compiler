@@ -11,6 +11,8 @@
 
 class Function : public Scope {
 
+	void make_instructions(VariableMap& bindings, FunctionStack& stack, IRVector& out) const;
+
 protected:
 
 public:
@@ -25,7 +27,8 @@ public:
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 
-	virtual void CompileIR(VariableMap bindings, std::ostream& dst) const;
+	virtual void CompileIR(VariableMap globals, std::ostream& dst) const;
+	virtual void CompileMIPS(VariableMap globals, std::ostream& dst) const;
 };
 
 #endif

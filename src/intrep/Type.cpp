@@ -228,3 +228,20 @@ bool Type::is_compatible(Type t) const {
 	// neither are pointers
 	return bytes() == t.bytes();
 }
+
+#include <iostream>
+
+void align_address(unsigned& address, unsigned alignment, unsigned max_alignment) {
+	if(alignment > max_alignment) {
+		alignment = max_alignment;
+	}
+
+	//std::cerr << "asked to align " << address << " by " << alignment << '\n';
+
+	int extra_bytes = address % alignment;
+
+	if(extra_bytes) {
+		//std::cerr << "aligning " << address << " by " << alignment << " to " << (address + alignment - extra_bytes) << '\n';
+		address += alignment - extra_bytes;
+	}
+}
