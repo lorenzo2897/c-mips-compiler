@@ -117,6 +117,9 @@ void debug_stack_allocations(std::map<std::string, unsigned> const& array_addres
 		if(addr == stack_size - 4) {
 			std::cerr << " frame pointer";
 		}
+		if(addr == stack_size - 8) {
+			std::cerr << " return address";
+		}
 		std::cerr << "\n";
 	}
 }
@@ -141,7 +144,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 		stack_offsets[(*itr).first] = stack_size;
 		stack_size += (*itr).second.bytes();
 	}
-	stack_size += 4;
+	stack_size += 8;
 
 	// stack must be 8-byte aligned
 	align_address(stack_size, 8, 8);
@@ -165,6 +168,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	// function header
 	dst << "    addiu   $sp, $sp, -" << stack_size << "\n"; // allocate stack
 	dst << "    sw      $fp, " << (stack_size - 4) << "($sp)" << "\n"; // store previous frame pointer on stack
+	dst << "    sw      $31, " << (stack_size - 8) << "($sp)" << "\n"; // store return address on stack
 	dst << "    move    $fp, $sp\n"; // create new frame pointer
 
 	// bring parameters onto the stack
@@ -181,9 +185,10 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	/* */
 	dst << "  fnc_" << function_name << "_return:\n";
 	dst << "    move    $sp, $fp\n"; // get back the base stack pointer
+	dst << "    lw      $31, " << (stack_size - 8) << "($sp)" << "\n"; // load return address
 	dst << "    lw      $fp, " << (stack_size - 4) << "($sp)" << "\n"; // load previous frame pointer
 	dst << "    addiu   $sp, $sp, " << stack_size << "\n"; // release allocated stack
-	dst << "    j       $31\n"; // release allocated stack
+	dst << "    j       $31\n"; // jump to return address
 	dst << "    nop\n"; // delay slot
 
 	dst << "\n";
