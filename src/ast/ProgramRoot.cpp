@@ -55,9 +55,9 @@ void ProgramRoot::populate_declarations(VariableMap& bindings, ArrayMap& arrays)
 		if(bindings.count((*itr)->identifier)) {
 			throw compile_error("global variable " + (*itr)->identifier + " was declared twice");
 		}
-		bindings[(*itr)->identifier] = Binding((std::string)"var_" + (*itr)->identifier, (*itr)->var_type, true);
+		bindings[(*itr)->identifier] = Binding((*itr)->identifier, (*itr)->var_type, true);
 		if((*itr)->is_array()) {
-			arrays[(std::string)"var_" + (*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
+			arrays[(*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
 		}
 	}
 	// TODO : global variable initialisation

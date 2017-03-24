@@ -2,6 +2,10 @@
 
 #include <iomanip>
 
+void Instruction::PrintMIPS(std::ostream& dst, IRContext const& context) const {
+	dst << "    undefined\n";
+}
+
 // *******************************************
 
 LabelInstruction::LabelInstruction(std::string name) : label_name(name) {}

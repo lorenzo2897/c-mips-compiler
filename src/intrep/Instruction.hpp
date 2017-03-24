@@ -8,6 +8,7 @@
 
 #include "Type.hpp"
 #include "VariableMap.hpp"
+#include "IRContext.hpp"
 #include "../CompileError.hpp"
 
 // *******************************************
@@ -15,7 +16,7 @@
 class Instruction {
 public:
 	virtual void Debug(std::ostream& dst) const = 0;
-	//virtual void PrintMIPS(FunctionStack& stack, FunctionStack& globals, FunctionStack& functions) const;
+	virtual void PrintMIPS(std::ostream& dst, IRContext const& context) const;
 };
 
 // *******************************************

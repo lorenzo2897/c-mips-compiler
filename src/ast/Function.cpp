@@ -121,7 +121,8 @@ void debug_stack_allocations(std::map<std::string, unsigned> const& array_addres
 	}
 }
 
-void Function::CompileMIPS(VariableMap bindings, std::ostream &dst) const {
+void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
+	VariableMap bindings = globals;
 	FunctionStack stack;
 	IRVector out;
 	make_instructions(bindings, stack, out);
@@ -154,6 +155,9 @@ void Function::CompileMIPS(VariableMap bindings, std::ostream &dst) const {
 		parameters_stack += (*itr)->var_type.bytes();
 	}
 
+	// create a context for the IR language to run in
+	IRContext context(globals, stack, stack_offsets, function_name);
+
 	// print MIPS assembly code
 	dst << "    .globl " << function_name << "\n    .align 4\n";
 	dst << function_name << ":\n";
@@ -169,8 +173,13 @@ void Function::CompileMIPS(VariableMap bindings, std::ostream &dst) const {
 	dst << "    sw      $6, " << (stack_size+8) << "($fp)\n";
 	dst << "    sw      $7, " << (stack_size+12) << "($fp)\n";
 	/* */
-	debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+	//debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+	dst << "  fnc_" << function_name << "_code:\n";
+	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
+		(*itr)->PrintMIPS(dst, context);
+	}
 	/* */
+	dst << "  fnc_" << function_name << "_return:\n";
 	dst << "    move    $sp, $fp\n"; // get back the base stack pointer
 	dst << "    lw      $fp, " << (stack_size - 4) << "($sp)" << "\n"; // load previous frame pointer
 	dst << "    addiu   $sp, $sp, " << stack_size << "\n"; // release allocated stack
