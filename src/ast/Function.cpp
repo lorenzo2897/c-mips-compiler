@@ -151,6 +151,12 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 
 	// assign locations in the stack to function parameters
 	unsigned parameters_stack = stack_size;
+
+	// if we return a struct, space will have been allocated for us, and its address will be in $4
+	if(return_type.is_struct()) {
+		parameters_stack += 4;
+	}
+
 	for(std::vector<Declaration*>::const_iterator itr = parameters.begin(); itr != parameters.end(); ++itr) {
 		std::string param_alias = bindings.at((*itr)->identifier).alias;
 		align_address(parameters_stack, ((*itr)->var_type.is_float() && (*itr)->var_type.bytes() == 8) ? 8 : 4, 8);
@@ -159,7 +165,8 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	}
 
 	// create a context for the IR language to run in
-	IRContext context(globals, stack, stack_offsets, function_name);
+	stack.add_variables(bindings, parameters);
+	IRContext context(globals, stack, stack_offsets, function_name, return_type, stack_size);
 
 	// print MIPS assembly code
 	dst << "    .globl " << function_name << "\n    .align 4\n";
@@ -177,7 +184,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	dst << "    sw      $6, " << (stack_size+8) << "($fp)\n";
 	dst << "    sw      $7, " << (stack_size+12) << "($fp)\n";
 	/* */
-	//debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+	debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
 	dst << "  fnc_" << function_name << "_code:\n";
 	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
 		(*itr)->PrintMIPS(dst, context);

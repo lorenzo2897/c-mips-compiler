@@ -13,5 +13,7 @@ void ReturnStatement::MakeIR(VariableMap const& bindings, FunctionStack& stack, 
 	if(expression) {
 		std::string res = expression->MakeIR(bindings, stack, out);
 		out.push_back(new ReturnInstruction(res));
+	} else {
+		out.push_back(new ReturnInstruction());
 	}
 }

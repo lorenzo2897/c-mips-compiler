@@ -16,7 +16,7 @@
 class Instruction {
 public:
 	virtual void Debug(std::ostream& dst) const = 0;
-	virtual void PrintMIPS(std::ostream& dst, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -31,6 +31,7 @@ private:
 public:
 	LabelInstruction(std::string name);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 class GotoInstruction : public Instruction {
@@ -39,6 +40,7 @@ private:
 public:
 	GotoInstruction(std::string name);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 class GotoIfEqualInstruction : public Instruction {
@@ -57,8 +59,10 @@ class ReturnInstruction : public Instruction {
 private:
 	std::string return_variable;
 public:
+	ReturnInstruction();
 	ReturnInstruction(std::string return_variable);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************

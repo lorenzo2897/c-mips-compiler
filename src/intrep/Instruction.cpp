@@ -2,8 +2,8 @@
 
 #include <iomanip>
 
-void Instruction::PrintMIPS(std::ostream& dst, IRContext const& context) const {
-	dst << "    undefined\n";
+void Instruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	out << "    undefined\n";
 }
 
 // *******************************************
@@ -14,12 +14,21 @@ void LabelInstruction::Debug(std::ostream &dst) const {
 	dst << "  " << label_name << ":" << std::endl;
 }
 
+void LabelInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	out << "  " << label_name << ":\n";
+}
+
 // *******************************************
 
 GotoInstruction::GotoInstruction(std::string name) : label_name(name) {}
 
 void GotoInstruction::Debug(std::ostream &dst) const {
 	dst << "    goto " << label_name << std::endl;
+}
+
+void GotoInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	out << "    j       " << label_name << "\n";
+	out << "    nop\n";
 }
 
 // *******************************************
@@ -32,10 +41,32 @@ void GotoIfEqualInstruction::Debug(std::ostream &dst) const {
 
 // *******************************************
 
+ReturnInstruction::ReturnInstruction() : return_variable("") {}
 ReturnInstruction::ReturnInstruction(std::string return_variable) : return_variable(return_variable) {}
 
 void ReturnInstruction::Debug(std::ostream &dst) const {
 	dst << "    return " << return_variable << std::endl;
+}
+
+void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(return_variable != "") {
+		if(context.get_return_type().is_struct()) {
+			// make sure the types are equal
+			if(!context.get_return_type().equals(context.get_type(return_variable))) {
+				throw compile_error((std::string)"type mismatch: cannot return a variable of type '" + context.get_type(return_variable).name() + "' in a function of type '" + context.get_return_type().name() + "'");
+			}
+			// get the base address of the struct
+			out << "    move    $3, " << context.get_return_struct_offset() << "($fp)\n";
+			// copy the struct into the address
+			context.copy(out, return_variable, "", context.get_return_type().bytes());
+		} else {
+			// populate register $4 with return value
+			context.load_variable(out, return_variable, 8);
+			context.convert(out, 8, context.get_type(return_variable), 4, context.get_return_type());
+		}
+	}
+	out << "    j       " << context.get_return_label() << "\n";
+	out << "    nop\n";
 }
 
 // *******************************************
