@@ -64,7 +64,7 @@ unsigned IRContext::get_return_struct_offset() const {
 
 void IRContext::load_variable(std::ostream &out, std::string source, unsigned reg_number) const {
 	Type src_type = get_type(source);
-	if(src_type.bytes() > 4) {
+	if(src_type.bytes() > 8) {
 		throw compile_error((std::string)"cannot load variable '" + source + "' of type '" + src_type.name() + "' into a register");
 	}
 	// how large is it?
@@ -82,16 +82,22 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 	}
 	// is it a labeled variable or local?
 	if(is_global(source)) {
-		out << "    lui     $2, %hi(" << source << ")\n";
-		out << "    " << load_instr << "      $" << reg_number << ", %lo(" << source << ")($2)\n";
+		out << "    li     $2, " << source << "\n";
+		out << "    " << load_instr << "      $" << reg_number << ", 0($2)\n";
+		if(src_type.bytes() == 8) {
+			out << "    lw      $" << (reg_number+1) << ", 4($2)\n";
+		}
 	} else {
 		out << "    " << load_instr << "      $" << reg_number << ", " << get_stack_offset(source) << "($fp)\n";
+		if(src_type.bytes() == 8) {
+			out << "    lw      $" << (reg_number+1) << ", " << (get_stack_offset(source)+4) << "($fp)\n";
+		}
 	}
 }
 
 void IRContext::store_variable(std::ostream &out, std::string destination, unsigned reg_number) const {
 	Type dst_type = get_type(destination);
-	if(dst_type.bytes() > 4) {
+	if(dst_type.bytes() > 8) {
 		throw compile_error((std::string)"cannot store a register into variable '" + destination + "' of type '" + dst_type.name() + "'");
 	}
 	// how large is it?
@@ -109,20 +115,17 @@ void IRContext::store_variable(std::ostream &out, std::string destination, unsig
 	}
 	// is it a labeled variable or local?
 	if(is_global(destination)) {
-		out << "    lui     $2, %hi(" << destination << ")\n";
+		out << "    li     $2, " << destination << "\n";
 		out << "    " << store_instr << "      $" << reg_number << ", %lo(" << destination << ")($2)\n";
+		if(dst_type.bytes() == 8) {
+			out << "    sw      $" << (reg_number+1) << ", 4($2)\n";
+		}
 	} else {
 		out << "    " << store_instr << "      $" << reg_number << ", " << get_stack_offset(destination) << "($fp)\n";
+		if(dst_type.bytes() == 8) {
+			out << "    sw      $" << (reg_number+1) << ", " << (get_stack_offset(destination)+4) << "($fp)\n";
+		}
 	}
-}
-
-void IRContext::convert(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg, Type d_type) const {
-	if(s_type.equals(d_type)) {
-		out << "    move    $" << d_reg << ", $" << s_reg << "\n";
-		return;
-	}
-
-	throw compile_error((std::string)"type mismatch: '" + s_type.name() + "' is not compatible with '" + d_type.name() + "'");
 }
 
 void IRContext::copy(std::ostream &out, std::string source, std::string destination, unsigned total_bytes) const {

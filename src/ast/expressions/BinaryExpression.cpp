@@ -1,5 +1,7 @@
 #include "BinaryExpression.hpp"
 
+#include "../../intrep/Conversions.hpp"
+
 BinaryExpression::BinaryExpression(Expression* l, Expression* r, BinaryOperator op) : left(l), right(r), op(op) {}
 
 void BinaryExpression::Debug(std::ostream& dst, int indent) const {
@@ -65,6 +67,7 @@ void BinaryExpression::Debug(std::ostream& dst, int indent) const {
 	dst << ")";
 }
 
+
 Type BinaryExpression::GetType(VariableMap const& bindings) const {
 	switch (op) {
 		case op_equals:
@@ -76,8 +79,11 @@ Type BinaryExpression::GetType(VariableMap const& bindings) const {
 		case op_logicaland:
 		case op_logicalor:
 			return Type("int", 0);
-		default:
+		case op_leftshift:
+		case op_rightshift:
 			return left->GetType(bindings);
+		default:
+			return arithmetic_conversion(left->GetType(bindings), right->GetType(bindings));
 	}
 }
 

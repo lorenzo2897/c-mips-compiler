@@ -39,8 +39,6 @@ public:
 	void store_variable(std::ostream &out, std::string destination, unsigned reg_number) const;
 	void copy(std::ostream &out, std::string source, std::string destination, unsigned total_bytes) const;
 
-	// type conversions
-	void convert(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg, Type d_type) const;
 };
 
 #endif

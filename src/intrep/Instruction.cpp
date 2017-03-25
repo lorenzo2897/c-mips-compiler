@@ -1,4 +1,5 @@
 #include "Instruction.hpp"
+#include "Conversions.hpp"
 
 #include <iomanip>
 
@@ -51,18 +52,18 @@ void ReturnInstruction::Debug(std::ostream &dst) const {
 void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
 	if(return_variable != "") {
 		if(context.get_return_type().is_struct()) {
-			// make sure the types are equal
+			// make sure the structs are equal
 			if(!context.get_return_type().equals(context.get_type(return_variable))) {
 				throw compile_error((std::string)"type mismatch: cannot return a variable of type '" + context.get_type(return_variable).name() + "' in a function of type '" + context.get_return_type().name() + "'");
 			}
 			// get the base address of the struct
-			out << "    move    $3, " << context.get_return_struct_offset() << "($fp)\n";
+			out << "    lw      $3, " << context.get_return_struct_offset() << "($fp)\n";
 			// copy the struct into the address
 			context.copy(out, return_variable, "", context.get_return_type().bytes());
 		} else {
-			// populate register $4 with return value
+			// populate register $2 with return value
 			context.load_variable(out, return_variable, 8);
-			context.convert(out, 8, context.get_type(return_variable), 4, context.get_return_type());
+			convert_type(out, 8, context.get_type(return_variable), 2, context.get_return_type());
 		}
 	}
 	out << "    j       " << context.get_return_label() << "\n";

@@ -184,7 +184,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	dst << "    sw      $6, " << (stack_size+8) << "($fp)\n";
 	dst << "    sw      $7, " << (stack_size+12) << "($fp)\n";
 	/* */
-	debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+	//debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
 	dst << "  fnc_" << function_name << "_code:\n";
 	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
 		(*itr)->PrintMIPS(dst, context);

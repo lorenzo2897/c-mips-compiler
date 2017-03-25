@@ -25,12 +25,71 @@ void Type::set_specifiers(std::vector<std::string> s) {
 		if(typedefs_exists(first)) {
 			Type aliased = typedefs_get(first);
 			pointer_depth += aliased.pointer_depth;
-			specifiers = aliased.specifiers;
+			set_specifiers(aliased.specifiers);
 			return;
 		}
 	}
 	specifiers = s;
-	bytes(); // check if type string is valid
+
+	// turn the string into a machine-friendly version
+	if(specifiers.size() == 1) {
+		std::string s = specifiers[0];
+		if(s == "void") {
+			builtin_type = Void; return;
+		} else if(s == "char") {
+			builtin_type = SignedChar; return;
+		} else if(s == "short") {
+			builtin_type = SignedShort; return;
+		} else if(s == "int") {
+			builtin_type = SignedInt; return;
+		} else if(s == "long") {
+			builtin_type = SignedLong; return;
+		} else if(s == "float") {
+			builtin_type = SingleFloat; return;
+		} else if(s == "double") {
+			builtin_type = DoubleFloat; return;
+		} else if(s.substr(0, 7) == "struct ") {
+			builtin_type = Struct; return;
+		} else if (s.substr(0, 6) == "union ") {
+			builtin_type = Struct; return;
+		} else if (s.substr(0, 5) == "enum ") {
+			builtin_type = Enum; return;
+		}
+	} else if(specifiers.size() == 2) {
+		std::string first = specifiers.at(0);
+		std::string second = specifiers.at(1);
+		if(first == "unsigned" || first == "signed") {
+			if(second == "char") {
+				builtin_type = first == "unsigned" ? UnsignedChar : SignedChar; return;
+			} else if(second == "short") {
+				builtin_type = first == "unsigned" ? UnsignedShort : SignedShort; return;
+			} else if(second == "int") {
+				builtin_type = first == "unsigned" ? UnsignedInt : SignedInt; return;
+			} else if(second == "long") {
+				builtin_type = first == "unsigned" ? UnsignedLong : SignedLong; return;
+			}
+		} else if(first == "long") {
+			if(second == "int") {
+				builtin_type = SignedLong; return;
+			} else if(second == "double") {
+				builtin_type = DoubleFloat; return;
+			}
+		}
+	} else if(specifiers.size() == 3) {
+		std::string first = specifiers.at(0);
+		std::string second = specifiers.at(1);
+		std::string third = specifiers.at(2);
+		if(first == "unsigned" && second == "long" && third == "int") {
+			builtin_type = UnsignedLong; return;
+		} else if(first == "signed" && second == "long" && third == "int") {
+			builtin_type = SignedLong; return;
+		}
+	}
+
+	std::string msg;
+	msg = "invalid type: ";
+	msg += name();
+	throw compile_error(msg);
 }
 
 std::string Type::name() const {
@@ -47,10 +106,7 @@ std::string Type::name() const {
 }
 
 Type Type::addressof() const {
-	Type t;
-	t.pointer_depth = pointer_depth + 1;
-	t.specifiers = specifiers;
-	return t;
+	return Type(specifiers, pointer_depth + 1);
 }
 
 Type Type::dereference() const {
@@ -60,10 +116,7 @@ Type Type::dereference() const {
 		msg += name();
 		throw compile_error(msg);
 	}
-	Type t;
-	t.pointer_depth = pointer_depth - 1;
-	t.specifiers = specifiers;
-	return t;
+	return Type(specifiers, pointer_depth - 1);
 }
 
 bool Type::is_pointer() const {
@@ -73,43 +126,35 @@ bool Type::is_pointer() const {
 bool Type::is_integer() const {
 	if(is_pointer()) return false;
 
-	std::string last = specifiers.at(specifiers.size() - 1);
-	if(last == "char" || last == "short" || last == "long" || last == "int") {
-		return true;
+	switch (builtin_type) {
+		case SignedChar:
+		case UnsignedChar:
+		case SignedShort:
+		case UnsignedShort:
+		case SignedInt:
+		case UnsignedInt:
+		case SignedLong:
+		case UnsignedLong:
+		case Enum:
+			return true;
+		default:
+			return false;
 	}
-
-	if(is_enum()) return true;
-
-	return false;
 }
 
 bool Type::is_float() const {
 	if(is_pointer()) return false;
-
-	std::string last = specifiers.at(specifiers.size() - 1);
-	if(last == "float" || last == "double") {
-		return true;
-	}
-
-	return false;
+	return builtin_type == SingleFloat || builtin_type == DoubleFloat;
 }
 
 bool Type::is_struct() const {
 	if(is_pointer()) return false;
-
-	if(specifiers.at(0).substr(0, 7) == "struct " || specifiers.at(0).substr(0, 6) == "union ") {
-		return true;
-	}
-
-	return false;
+	return builtin_type == Struct;
 }
 
 bool Type::is_enum() const {
 	if(is_pointer()) return false;
-	if(specifiers.at(0).substr(0, 5) == "enum ") {
-		return true;
-	}
-	return false;
+	return builtin_type == Enum;
 }
 
 std::string Type::struct_name() const {
@@ -138,76 +183,44 @@ unsigned Type::bytes() const {
 
 	if(is_pointer()) return 4;
 
-	if(specifiers.size() == 1) {
-		std::string s = specifiers[0];
-		if(s == "void") {
+	switch (builtin_type) {
+		case Void:
 			return 0;
-		} else if(s == "char") {
+		case SignedChar:
+		case UnsignedChar:
 			return 1;
-		} else if(s == "short") {
+		case SignedShort:
+		case UnsignedShort:
 			return 2;
-		} else if(s == "int") {
+		case SignedInt:
+		case UnsignedInt:
+		case SignedLong:
+		case UnsignedLong:
 			return 4;
-		} else if(s == "long") {
+		case SingleFloat:
 			return 4;
-		} else if(s == "float") {
-			return 4;
-		} else if(s == "double") {
+		case DoubleFloat:
 			return 8;
-		} else if(s.substr(0, 7) == "struct ") {
-			return struct_total_size(s.substr(7));
-		} else if (s.substr(0, 6) == "union ") {
-			return struct_total_size(s.substr(6));
-		} else if (s.substr(0, 5) == "enum ") {
-			return 4;
-		}
-	} else if(specifiers.size() == 2) {
-		std::string first = specifiers.at(0);
-		std::string second = specifiers.at(1);
-		if(first == "unsigned" || first == "signed") {
-			if(second == "char") {
-				return 1;
-			} else if(second == "short") {
-				return 2;
-			} else if(second == "int") {
-				return 4;
-			} else if(second == "long") {
-				return 4;
+		case Struct:
+			if(specifiers.at(0).substr(0, 7) == "struct ") {
+				return struct_total_size(specifiers.at(0).substr(7));
+			} else {
+				return struct_total_size(specifiers.at(0).substr(6));
 			}
-		} else if(first == "long") {
-			if(second == "int") {
-				return 4;
-			} else if(second == "double") {
-				return 8;
-			}
-		}
-	} else if(specifiers.size() == 3) {
-		std::string first = specifiers.at(0);
-		std::string second = specifiers.at(1);
-		std::string third = specifiers.at(2);
-		if(first == "unsigned" && second == "long" && third == "int") {
+		case Enum:
 			return 4;
-		} else if(first == "signed" && second == "long" && third == "int") {
-			return 4;
-		}
 	}
-
-	std::string msg;
-	msg = "invalid type: ";
-	msg += name();
-	throw compile_error(msg);
-	return 0;
 }
 
 bool Type::equals(Type t) const {
-	if(specifiers.size() != t.specifiers.size()) {
+	if(builtin_type != t.builtin_type) {
 		return false;
 	}
 
-	for(unsigned i = 0; i < specifiers.size(); i++) {
-		if(specifiers[i] != t.specifiers[i]) {
-			return false;
-		}
+	if(builtin_type == Struct) {
+		if(struct_name() != t.struct_name()) return false;
+	} else if(builtin_type == Enum) {
+		if(specifiers.at(0) != t.specifiers.at(0)) return false;
 	}
 
 	if(pointer_depth != t.pointer_depth) {

@@ -6,7 +6,7 @@ EXIT_CODE=0
 
 if [[ "$1" == "lscc" ]]; then
 	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
-	mips-linux-gnu-gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 fi
 
 if [[ "$1" == "gcc" ]]; then

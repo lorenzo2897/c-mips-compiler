@@ -5,9 +5,28 @@
 #include <string>
 
 class Type {
+public: enum BuiltinType {
+	Void,
+	SignedChar,
+	UnsignedChar,
+	SignedShort,
+	UnsignedShort,
+	SignedInt,
+	UnsignedInt,
+	SignedLong,
+	UnsignedLong,
+	SingleFloat,
+	DoubleFloat,
+	Struct,
+	Enum
+};
+
+private:
 	std::vector<std::string> specifiers;
+	BuiltinType builtin_type;
 
 public:
+
 	int pointer_depth;
 
 	Type();
