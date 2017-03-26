@@ -133,7 +133,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	// figure out where things are going to be on the stack
 	std::map<std::string, unsigned> array_addresses;
 	std::map<std::string, unsigned> stack_offsets;
-	unsigned stack_size = 0;
+	unsigned stack_size = 8;
 	for(ArrayMap::const_iterator itr = stack.arrays.begin(); itr != stack.arrays.end(); ++itr) {
 		align_address(stack_size, 4);
 		array_addresses[(*itr).first] = stack_size;

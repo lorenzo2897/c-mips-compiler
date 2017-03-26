@@ -198,7 +198,7 @@ unsigned Type::bytes() const {
 
 	switch (builtin_type) {
 		case Void:
-			return 0;
+			return 1;
 		case SignedChar:
 		case UnsignedChar:
 			return 1;

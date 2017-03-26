@@ -191,7 +191,7 @@ void AssignInstruction::PrintMIPS(std::ostream& out, IRContext const& context) c
 			case 4:
 				out << "    sw      $10, 0($3)\n"; break;
 			case 8:
-				out << "    sw      $10, 9($3)\n";
+				out << "    sw      $10, 0($3)\n";
 				out << "    sw      $11, 4($3)\n";
 				break;
 		}

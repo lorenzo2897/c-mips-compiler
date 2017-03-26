@@ -23,9 +23,9 @@ public: enum BuiltinType {
 
 private:
 	std::vector<std::string> specifiers;
-	BuiltinType builtin_type;
 
 public:
+	BuiltinType builtin_type;
 
 	int pointer_depth;
 
