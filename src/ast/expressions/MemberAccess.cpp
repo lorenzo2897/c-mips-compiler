@@ -67,14 +67,14 @@ std::string MemberAccess::MakeIR_lvalue(VariableMap const& bindings, FunctionSta
 	StructureType s = structures().at(name);
 
 	// get address of structure
-	std::string b = base->MakeIR(bindings, stack, out);
+	std::string b = base->MakeIR_lvalue(bindings, stack, out);
 	std::string addr;
 	if(dereference) {
-		addr = b;
+		addr = unique("struct_deref");
+		stack[addr] = base->GetType(bindings);
+		out.push_back(new DereferenceInstruction(addr, b));
 	} else {
-		addr = unique("struct_addr");
-		stack[addr] = base->GetType(bindings).addressof();
-		out.push_back(new AddressOfInstruction(addr, b));
+		addr = b;
 	}
 	// add the member's byte offset
 	std::string m_addr = unique("member_addr");

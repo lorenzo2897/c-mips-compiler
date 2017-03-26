@@ -19,6 +19,10 @@ Type arithmetic_conversion(Type l, Type r) {
 
 
 void convert_type(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg, Type d_type) {
+	if(s_type.is_struct() || d_type.is_struct()) {
+		throw compile_error("cannot convert structs to anything. also why is a struct even in a register at this point?");
+	}
+
 	if(s_type.equals(d_type)) {
 		out << "    move    $" << d_reg << ", $" << s_reg << "\n";
 		if(s_type.bytes() == 8)
@@ -26,5 +30,5 @@ void convert_type(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg
 		return;
 	}
 
-	throw compile_error((std::string)"type mismatch: '" + s_type.name() + "' is not compatible with '" + d_type.name() + "'");
+	throw compile_error((std::string)"type mismatch: '" + s_type.name() + "' cannot be converted to '" + d_type.name() + "'");
 }

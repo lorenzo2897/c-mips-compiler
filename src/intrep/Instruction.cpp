@@ -178,7 +178,7 @@ void AssignInstruction::PrintMIPS(std::ostream& out, IRContext const& context) c
 
 	if(context.get_type(destination).dereference().is_struct() && context.get_type(destination).dereference().equals(context.get_type(source))) {
 		// do a byte-wise copy
-		context.copy(out, source, "", context.get_type(destination).bytes());
+		context.copy(out, source, "", context.get_type(destination).dereference().bytes());
 	} else {
 		// do a conversion
 		context.load_variable(out, source, 8);
@@ -540,4 +540,10 @@ MemberAccessInstruction::MemberAccessInstruction(std::string destination, std::s
 
 void MemberAccessInstruction::Debug(std::ostream &dst) const {
 	dst << "    member " << destination << ", " << base << " + " << offset << std::endl;
+}
+
+void MemberAccessInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	context.load_variable(out, base, 8);
+	out << "    addiu   $8, $8, " << offset << "\n";
+	context.store_variable(out, destination, 8);
 }

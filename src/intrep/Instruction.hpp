@@ -304,6 +304,7 @@ private:
 public:
 	MemberAccessInstruction(std::string destination, std::string base, unsigned offset);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 #endif
