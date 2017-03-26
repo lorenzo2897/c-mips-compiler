@@ -3,6 +3,10 @@
 #include "../CompileError.hpp"
 
 Type arithmetic_conversion(Type l, Type r) {
+	if(l.is_struct() || r.is_struct()) {
+		throw compile_error("cannot perform arithmetic operations on a struct");
+	}
+
 	if(l.is_float() || r.is_float()) {
 		if(l.bytes() > r.bytes()) {
 			return l;

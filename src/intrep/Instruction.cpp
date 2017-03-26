@@ -256,6 +256,55 @@ void LogicalInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
+void LogicalInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load and convert to ints: in $10 and $13
+	context.load_variable(out, source1, 8);
+	convert_type(out, 8, context.get_type(source1), 10, Type("int", 0));
+	if(logicalType != '!') {
+		context.load_variable(out, source2, 11);
+		convert_type(out, 11, context.get_type(source2), 13, Type("int", 0));
+	}
+	std::string skip_label1 = unique("$L");
+	std::string skip_label2 = unique("$L");
+	switch (logicalType) {
+		case '&':
+			// if either is zero, return 0
+			out << "    li      $14, 1\n";
+			out << "    bne     $10, $0, " << skip_label1 << "\n";
+			out << "    nop\n";
+			out << "    li      $14, 0\n";
+			out << "   " << skip_label1 << ":\n";
+			out << "    bne     $13, $0, " << skip_label2 << "\n";
+			out << "    nop\n";
+			out << "    li      $14, 0\n";
+			out << "   " << skip_label2 << ":\n";
+			break;
+		case '|':
+			// if either is non-zero, return 1
+			out << "    li      $14, 0\n";
+			out << "    beq     $10, $0, " << skip_label1 << "\n";
+			out << "    nop\n";
+			out << "    li      $14, 1\n";
+			out << "   " << skip_label1 << ":\n";
+			out << "    beq     $13, $0, " << skip_label2 << "\n";
+			out << "    nop\n";
+			out << "    li      $14, 1\n";
+			out << "   " << skip_label2 << ":\n";
+			break;
+		case '!':
+			// if source is zero, return 1, else return 0
+			out << "    li      $14, 0\n";
+			out << "    bne     $10, $0, " << skip_label1 << "\n";
+			out << "    nop\n";
+			out << "    li      $14, 1\n";
+			out << "   " << skip_label1 << ":\n";
+			break;
+		default:
+			throw compile_error("unsupported type of boolean operator in LogicalInstruction");
+	}
+	context.store_variable(out, destination, 14);
+}
+
 // *******************************************
 
 BitwiseInstruction::BitwiseInstruction(std::string destination, std::string source1, std::string source2, char operatorType)

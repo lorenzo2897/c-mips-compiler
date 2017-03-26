@@ -7,11 +7,41 @@ EXIT_CODE=0
 if [[ "$1" == "lscc" ]]; then
 	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
 	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed $2: program did not compile"
+		exit 1
+	fi
+fi
+
+if [[ "$1" == "debug" ]]; then
+	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
+	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_debugger.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed to compile $2"
+		exit 1
+	fi
+	echo "program located at test/out/unit/$2"
+	exit 0
 fi
 
 if [[ "$1" == "gcc" ]]; then
 	gcc -std=c90 -pedantic -S test/c_files/unit/$2.c -o test/out/asm/$2.s
 	gcc -std=c90 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed $2: program did not compile"
+		exit 1
+	fi
+fi
+
+if [[ "$1" == "dgcc" ]]; then
+	gcc -std=c90 -pedantic -S test/c_files/unit/$2.c -o test/out/asm/$2.s
+	gcc -std=c90 test/c_files/framework/unit_debugger.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed to compile $2"
+		exit 1
+	fi
+	echo "program located at test/out/unit/$2"
+	exit 0
 fi
 
 

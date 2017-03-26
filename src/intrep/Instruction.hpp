@@ -145,6 +145,7 @@ private:
 public:
 	LogicalInstruction(std::string destination, std::string source1, std::string source2, char logicalType);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 class BitwiseInstruction : public Instruction {
