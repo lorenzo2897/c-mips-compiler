@@ -210,7 +210,7 @@ void AddressOfInstruction::Debug(std::ostream &dst) const {
 
 void AddressOfInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
 	if(context.is_global(source)) {
-		out << "    li      $8, " << source << "\n";
+		out << "    addiu   $8, $gp, %got(" << source << ")\n";
 	} else {
 		out << "    addiu   $8, $fp, " << context.get_stack_offset(source) << "\n";
 	}
@@ -226,7 +226,7 @@ void DereferenceInstruction::Debug(std::ostream &dst) const {
 
 void DereferenceInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
 	if(context.is_global(source)) {
-		out << "    li      $2, " << source << "\n";
+		out << "    addiu   $2, $gp, %got(" << source << ")\n";
 		out << "    lw      $2, 0($2)\n";
 	} else {
 		out << "    lw      $2, " << context.get_stack_offset(source) << "($fp)\n";

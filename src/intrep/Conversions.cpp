@@ -7,6 +7,14 @@ Type arithmetic_conversion(Type l, Type r) {
 		throw compile_error("cannot perform arithmetic operations on a struct");
 	}
 
+	if(l.is_pointer()) {
+		if(r.is_integer()) {
+			return l;
+		} else {
+			throw compile_error((std::string)"cannot perform pointer arithmetic with type '" + r.name() + "'");
+		}
+	}
+
 	if(l.is_float() || r.is_float()) {
 		if(l.bytes() > r.bytes()) {
 			return l;
@@ -19,6 +27,12 @@ Type arithmetic_conversion(Type l, Type r) {
 
 
 void convert_type(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg, Type d_type) {
+	if(s_type.is_enum()) {
+		s_type = Type("int", 0);
+	}
+	if(d_type.is_enum()) {
+		d_type = Type("int", 0);
+	}
 	if(s_type.is_struct() || d_type.is_struct()) {
 		throw compile_error("cannot convert structs to anything. also why is a struct even in a register at this point?");
 	}

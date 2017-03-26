@@ -40,7 +40,7 @@ Type IRContext::get_type(std::string name) const {
 
 std::string IRContext::get_variable_address(std::string name) const {
 	if(is_global(name)) {
-		return name;
+		return (std::string)"%got(" + name + ")($gp)";
 	} else {
 		std::stringstream ss;
 		ss << get_stack_offset(name) << "($fp)";
@@ -82,7 +82,7 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 	}
 	// is it a labeled variable or local?
 	if(is_global(source)) {
-		out << "    li     $2, " << source << "\n";
+		out << "    addiu   $2, $gp, %got(" << source << ")\n";
 		out << "    " << load_instr << "     $" << reg_number << ", 0($2)\n";
 		if(src_type.bytes() == 8) {
 			out << "    lw      $" << (reg_number+1) << ", 4($2)\n";
@@ -116,7 +116,7 @@ void IRContext::store_variable(std::ostream &out, std::string destination, unsig
 	}
 	// is it a labeled variable or local?
 	if(is_global(destination)) {
-		out << "    li     $3, " << destination << "\n";
+		out << "    addiu   $3, $gp, %got(" << destination << ")\n";
 		out << "    " << store_instr << "      $" << reg_number << ", 0($3)\n";
 		if(dst_type.bytes() == 8) {
 			out << "    sw      $" << (reg_number+1) << ", 4($3)\n";
@@ -135,14 +135,14 @@ void IRContext::copy(std::ostream &out, std::string source, std::string destinat
 	// load addresses of any variable in global
 	if(source != "") {
 		if(is_global(source)) {
-			out << "    li      $2, " << source << "\n";
+			out << "    addiu   $2, $gp, %got(" << source << ")\n";
 		} else {
 			out << "    addiu   $2, $fp, " << get_stack_offset(source) << "\n";
 		}
 	}
 	if(destination != "") {
 		if(is_global(destination)) {
-			out << "    li      $3, " << destination << "\n";
+			out << "    addiu   $3, $gp, %got(" << destination << ")\n";
 		} else {
 			out << "    addiu   $3, $fp, " << get_stack_offset(destination) << "\n";
 		}
