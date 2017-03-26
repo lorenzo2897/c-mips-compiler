@@ -121,7 +121,7 @@ std::string very_conservative_escape(std::string src) {
 	std::stringstream ss;
 	for(unsigned i = 0; i < src.size(); i++) {
 		char c = src[i];
-		if(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == ' ') {
+		if((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ' ') {
 			ss << c;
 		} else {
 			ss << "\\" << std::setfill('0') << std::setw(3) << std::oct << (int)c;

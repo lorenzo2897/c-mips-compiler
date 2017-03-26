@@ -117,10 +117,12 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 					| TYPEDEF DeclarationSpecifiers IDENTIFIER ';' {
 						// add definition
 						typedefs_define($3, Type(*$2, 0));
+						$$ = NULL;
 					}
 					| TYPEDEF DeclarationSpecifiers TypeSuffix IDENTIFIER ';' {
 						// add definition
 						typedefs_define($4, Type(*$2, $3->depth));
+						$$ = NULL;
 					}
 
 DeclarationSpecifiers : TypeSpecifier {
