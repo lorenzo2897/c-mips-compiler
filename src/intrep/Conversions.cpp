@@ -36,7 +36,7 @@ Type arithmetic_conversion(Type l, Type r) {
 	}
 
 	// deal with sign
-	if(l.is_signed() || r.is_signed()) {
+	if(!l.is_signed() || !r.is_signed()) {
 		r = Type("unsigned", 0);
 	}
 
