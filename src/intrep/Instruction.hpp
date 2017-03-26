@@ -157,6 +157,7 @@ private:
 public:
 	BitwiseInstruction(std::string destination, std::string source1, std::string source2, char operatorType);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 class EqualityInstruction : public Instruction {
@@ -181,6 +182,7 @@ private:
 public:
 	ShiftInstruction(std::string destination, std::string source1, std::string source2, bool doRightShift);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -192,6 +194,7 @@ private:
 public:
 	NegativeInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -276,6 +279,7 @@ private:
 public:
 	CastInstruction(std::string destination, std::string source, Type cast_type);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************

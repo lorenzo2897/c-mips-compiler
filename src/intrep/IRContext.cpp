@@ -71,10 +71,10 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 	std::string load_instr;
 	switch (src_type.bytes()) {
 	case 1:
-		load_instr = "lb";
+		load_instr = src_type.is_signed() ? "lb " : "lbu";
 		break;
 	case 2:
-		load_instr = "lh";
+		load_instr = src_type.is_signed() ? "lh " : "lhu";
 		break;
 	default:
 		load_instr = "lw";
@@ -83,12 +83,12 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 	// is it a labeled variable or local?
 	if(is_global(source)) {
 		out << "    li     $2, " << source << "\n";
-		out << "    " << load_instr << "      $" << reg_number << ", 0($2)\n";
+		out << "    " << load_instr << "     $" << reg_number << ", 0($2)\n";
 		if(src_type.bytes() == 8) {
 			out << "    lw      $" << (reg_number+1) << ", 4($2)\n";
 		}
 	} else {
-		out << "    " << load_instr << "      $" << reg_number << ", " << get_stack_offset(source) << "($fp)\n";
+		out << "    " << load_instr << "     $" << reg_number << ", " << get_stack_offset(source) << "($fp)\n";
 		if(src_type.bytes() == 8) {
 			out << "    lw      $" << (reg_number+1) << ", " << (get_stack_offset(source)+4) << "($fp)\n";
 		}

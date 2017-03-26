@@ -42,6 +42,7 @@ public:
 	bool is_float() const;
 	bool is_struct() const;
 	bool is_enum() const;
+	bool is_signed() const;
 
 	std::string struct_name() const;
 

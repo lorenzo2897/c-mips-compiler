@@ -40,8 +40,10 @@ void Type::set_specifiers(std::vector<std::string> s) {
 			builtin_type = SignedChar; return;
 		} else if(s == "short") {
 			builtin_type = SignedShort; return;
-		} else if(s == "int") {
+		} else if(s == "int" || s == "signed") {
 			builtin_type = SignedInt; return;
+		} else if(s == "unsigned") {
+			builtin_type = UnsignedInt; return;
 		} else if(s == "long") {
 			builtin_type = SignedLong; return;
 		} else if(s == "float") {
@@ -74,6 +76,8 @@ void Type::set_specifiers(std::vector<std::string> s) {
 			} else if(second == "double") {
 				builtin_type = DoubleFloat; return;
 			}
+		} else if(first == "short" && second == "int") {
+			builtin_type = SignedShort; return;
 		}
 	} else if(specifiers.size() == 3) {
 		std::string first = specifiers.at(0);
@@ -83,6 +87,10 @@ void Type::set_specifiers(std::vector<std::string> s) {
 			builtin_type = UnsignedLong; return;
 		} else if(first == "signed" && second == "long" && third == "int") {
 			builtin_type = SignedLong; return;
+		} else if(first == "unsigned" && second == "short" && third == "int") {
+			builtin_type = UnsignedShort; return;
+		} else if(first == "signed" && second == "short" && third == "int") {
+			builtin_type = SignedShort; return;
 		}
 	}
 
@@ -155,6 +163,11 @@ bool Type::is_struct() const {
 bool Type::is_enum() const {
 	if(is_pointer()) return false;
 	return builtin_type == Enum;
+}
+
+bool Type::is_signed() const {
+	if(is_pointer()) return false;
+	return builtin_type == SignedChar || builtin_type == SignedShort || builtin_type == SignedInt || builtin_type == SignedLong;
 }
 
 std::string Type::struct_name() const {

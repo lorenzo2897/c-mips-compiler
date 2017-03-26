@@ -329,6 +329,39 @@ void BitwiseInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
+void BitwiseInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(!context.get_type(source1).is_integer()) {
+		throw compile_error("cannot perform a bitwise operation on structs, unions, or floats");
+	}
+	if(operatorType != '~') {
+		if(!context.get_type(source2).is_integer()) {
+			throw compile_error("cannot perform a bitwise operation on structs, unions, or floats");
+		}
+	}
+	// load up our integers
+	context.load_variable(out, source1, 8);
+	if(operatorType != '~') context.load_variable(out, source2, 9);
+	// perform the bitwise operation and store into $10
+	switch (operatorType) {
+		case '&':
+			out << "    and     $10, $8, $9\n";
+			break;
+		case '|':
+			out << "    or      $10, $8, $9\n";
+			break;
+		case '^':
+			out << "    xor     $10, $8, $9\n";
+			break;
+		case '~':
+			out << "    not     $10, $8\n";
+			break;
+		default:
+			throw compile_error("unsupported type of boolean operator in BitwiseInstruction");
+	}
+	// store back into memory
+	context.store_variable(out, destination, 10);
+}
+
 // *******************************************
 
 EqualityInstruction::EqualityInstruction(std::string destination, std::string source1, std::string source2, char equalityType)
@@ -372,6 +405,24 @@ void ShiftInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
+void ShiftInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(!context.get_type(source1).is_integer() || !context.get_type(source1).is_integer()) {
+		throw compile_error("cannot perform a shift operation on structs, unions, or floats");
+	}
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 9);
+	if(doRightShift) {
+		if(context.get_type(source1).is_signed()) {
+			out << "    srav    $10, $8, $9\n";
+		} else {
+			out << "    srlv    $10, $8, $9\n";
+		}
+	} else {
+		out << "    sllv    $10, $8, $9\n";
+	}
+	context.store_variable(out, destination, 10);
+}
+
 // *******************************************
 
 NegativeInstruction::NegativeInstruction(std::string destination, std::string source)
@@ -379,6 +430,19 @@ NegativeInstruction::NegativeInstruction(std::string destination, std::string so
 
 void NegativeInstruction::Debug(std::ostream &dst) const {
 	dst << "    negative " << destination << ", " << source << std::endl;
+}
+
+void NegativeInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.get_type(source).is_struct()) {
+		throw compile_error("cannot make structs or unions negative");
+	}
+	if(context.get_type(source).is_integer()) {
+		context.load_variable(out, source, 8);
+		out << "    subu    $10, $0, $8\n";
+		context.store_variable(out, destination, 10);
+	} else {
+		// TODO: implement floats here
+	}
 }
 
 // *******************************************
@@ -446,6 +510,15 @@ CastInstruction::CastInstruction(std::string destination, std::string source, Ty
 
 void CastInstruction::Debug(std::ostream &dst) const {
 	dst << "    cast " << destination << ", " << source << ", " << cast_type.name() << std::endl;
+}
+
+void CastInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.get_type(source).is_struct() || cast_type.is_struct()) {
+		throw compile_error("cannot cast structs");
+	}
+	context.load_variable(out, source, 8);
+	convert_type(out, 8, context.get_type(source), 10, cast_type);
+	context.store_variable(out, destination, 10);
 }
 
 // *******************************************
