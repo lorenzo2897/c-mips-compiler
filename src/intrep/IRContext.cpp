@@ -93,6 +93,7 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 			out << "    lw      $" << (reg_number+1) << ", " << (get_stack_offset(source)+4) << "($fp)\n";
 		}
 	}
+	out << "    nop\n";
 }
 
 void IRContext::store_variable(std::ostream &out, std::string destination, unsigned reg_number) const {
@@ -115,10 +116,10 @@ void IRContext::store_variable(std::ostream &out, std::string destination, unsig
 	}
 	// is it a labeled variable or local?
 	if(is_global(destination)) {
-		out << "    li     $2, " << destination << "\n";
-		out << "    " << store_instr << "      $" << reg_number << ", %lo(" << destination << ")($2)\n";
+		out << "    li     $3, " << destination << "\n";
+		out << "    " << store_instr << "      $" << reg_number << ", 0($3)\n";
 		if(dst_type.bytes() == 8) {
-			out << "    sw      $" << (reg_number+1) << ", 4($2)\n";
+			out << "    sw      $" << (reg_number+1) << ", 4($3)\n";
 		}
 	} else {
 		out << "    " << store_instr << "      $" << reg_number << ", " << get_stack_offset(destination) << "($fp)\n";
@@ -126,6 +127,7 @@ void IRContext::store_variable(std::ostream &out, std::string destination, unsig
 			out << "    sw      $" << (reg_number+1) << ", " << (get_stack_offset(destination)+4) << "($fp)\n";
 		}
 	}
+	out << "    nop\n";
 }
 
 void IRContext::copy(std::ostream &out, std::string source, std::string destination, unsigned total_bytes) const {
@@ -151,12 +153,14 @@ void IRContext::copy(std::ostream &out, std::string source, std::string destinat
 	unsigned words = total_bytes / 4;
 	for(unsigned i = 0; i < words; i++) {
 		out << "    lw      $8, " << (i * 4) << "($2)\n";
+		out << "    nop\n";
 		out << "    sw      $8, " << (i * 4) << "($3)\n";
 	}
 
 	unsigned leftover_bytes = total_bytes % 4;
 	for(unsigned i = 0; i < leftover_bytes; i++) {
 		out << "    lb      $8, " << (words * 4 + i) << "($2)\n";
+		out << "    nop\n";
 		out << "    sb      $8, " << (words * 4 + i) << "($3)\n";
 	}
 }

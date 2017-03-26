@@ -1,7 +1,9 @@
 #include "Instruction.hpp"
 #include "Conversions.hpp"
+#include "UniqueNames.hpp"
 
 #include <iomanip>
+#include <sstream>
 
 void Instruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
 	out << "    undefined\n";
@@ -40,6 +42,22 @@ void GotoIfEqualInstruction::Debug(std::ostream &dst) const {
 	dst << "    beq " << variable << ", " << value << ", " << label_name << std::endl;
 }
 
+void GotoIfEqualInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	std::string skip_label = unique("$L");
+	context.load_variable(out, variable, 8);
+	convert_type(out, 8, context.get_type(variable), 10, Type("int", 0));
+	if(value == 0) {
+		out << "    bne     $10, $0, " << skip_label << "\n";
+	} else {
+		out << "    li      $11, " << value << "\n";
+		out << "    bne     $10, $11, " << skip_label << "\n";
+	}
+	out << "    nop\n";
+	out << "    j       " << label_name << "\n";
+	out << "    nop\n";
+	out << "   " << skip_label << ":\n";
+}
+
 // *******************************************
 
 ReturnInstruction::ReturnInstruction() : return_variable("") {}
@@ -58,6 +76,7 @@ void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext const& context) c
 			}
 			// get the base address of the struct
 			out << "    lw      $3, " << context.get_return_struct_offset() << "($fp)\n";
+			out << "    nop\n";
 			// copy the struct into the address
 			context.copy(out, return_variable, "", context.get_return_type().bytes());
 		} else {
@@ -84,11 +103,45 @@ void ConstantInstruction::Debug(std::ostream &dst) const {
 	<< std::dec << std::endl;
 }
 
+void ConstantInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(type.bytes() == 8) {
+		out << "    li      $8, " << dataHi <<"\n";
+		out << "    li      $9, " << dataLo <<"\n";
+	} else {
+		if(dataLo == 0) {
+			out << "    move    $8, $0\n";
+		} else {
+			out << "    li      $8, " << dataLo <<"\n";
+		}
+	}
+	context.store_variable(out, destination, 8);
+}
+
+std::string very_conservative_escape(std::string src) {
+	std::stringstream ss;
+	for(unsigned i = 0; i < src.size(); i++) {
+		char c = src[i];
+		if(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == ' ') {
+			ss << c;
+		} else {
+			ss << "\\" << std::setfill('0') << std::setw(3) << std::oct << (int)c;
+		}
+	}
+	return ss.str();
+}
+
 StringInstruction::StringInstruction(std::string destination, std::string data)
 : destination(destination), data(data) {}
 
 void StringInstruction::Debug(std::ostream &dst) const {
 	dst << "    ascii " << destination << " " << data << std::endl;
+}
+
+void StringInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	out << "    string_data_" << destination << ":\n";
+	out << "    .ascii \"" << very_conservative_escape(data) << "\\000\"\n";
+	out << "    li      $8, string_data_" << destination << "\n";
+	context.store_variable(out, destination, 8);
 }
 
 // *******************************************
@@ -100,11 +153,50 @@ void MoveInstruction::Debug(std::ostream &dst) const {
 	dst << "    move " << destination << ", " << source << std::endl;
 }
 
+void MoveInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.get_type(destination).is_struct() && context.get_type(destination).equals(context.get_type(source))) {
+		// do a byte-wise copy
+		context.copy(out, source, destination, context.get_type(destination).bytes());
+	} else {
+		// do a conversion
+		context.load_variable(out, source, 8);
+		convert_type(out, 8, context.get_type(source), 10, context.get_type(destination));
+		context.store_variable(out, destination, 10);
+	}
+}
+
 AssignInstruction::AssignInstruction(std::string destination, std::string source)
 : destination(destination), source(source) {}
 
 void AssignInstruction::Debug(std::ostream &dst) const {
 	dst << "    assign *" << destination << ", " << source << std::endl;
+}
+
+void AssignInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// get the address of the destination to assign
+	context.load_variable(out, destination, 3);
+
+	if(context.get_type(destination).dereference().is_struct() && context.get_type(destination).dereference().equals(context.get_type(source))) {
+		// do a byte-wise copy
+		context.copy(out, source, "", context.get_type(destination).bytes());
+	} else {
+		// do a conversion
+		context.load_variable(out, source, 8);
+		convert_type(out, 8, context.get_type(source), 10, context.get_type(destination).dereference());
+		switch (context.get_type(destination).dereference().bytes()) {
+			case 1:
+				out << "    sb      $10, 0($3)\n"; break;
+			case 2:
+				out << "    sh      $10, 0($3)\n"; break;
+			case 4:
+				out << "    sw      $10, 0($3)\n"; break;
+			case 8:
+				out << "    sw      $10, 9($3)\n";
+				out << "    sw      $11, 4($3)\n";
+				break;
+		}
+		out << "    nop\n";
+	}
 }
 
 // *******************************************
@@ -116,11 +208,31 @@ void AddressOfInstruction::Debug(std::ostream &dst) const {
 	dst << "    addressOf " << destination << ", &" << source << std::endl;
 }
 
+void AddressOfInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.is_global(source)) {
+		out << "    li      $8, " << source << "\n";
+	} else {
+		out << "    addiu   $8, $fp, " << context.get_stack_offset(source) << "\n";
+	}
+	context.store_variable(out, destination, 8);
+}
+
 DereferenceInstruction::DereferenceInstruction(std::string destination, std::string source)
 : destination(destination), source(source) {}
 
 void DereferenceInstruction::Debug(std::ostream &dst) const {
 	dst << "    dereference " << destination << ", *" << source << std::endl;
+}
+
+void DereferenceInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.is_global(source)) {
+		out << "    li      $2, " << source << "\n";
+		out << "    lw      $2, 0($2)\n";
+	} else {
+		out << "    lw      $2, " << context.get_stack_offset(source) << "($fp)\n";
+	}
+	out << "    nop\n";
+	context.copy(out, "", destination, context.get_type(destination).bytes());
 }
 
 // *******************************************
