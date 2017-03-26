@@ -3,18 +3,22 @@
 #include "../CompileError.hpp"
 
 Type arithmetic_conversion(Type l, Type r) {
+	/* Section 6.2.1 of the C89 standard */
+
 	if(l.is_struct() || r.is_struct()) {
 		throw compile_error("cannot perform arithmetic operations on a struct");
 	}
 
+	// pointer arithmetic
 	if(l.is_pointer()) {
-		if(r.is_integer()) {
+		if(r.is_integer() || r.equals(l)) {
 			return l;
 		} else {
 			throw compile_error((std::string)"cannot perform pointer arithmetic with type '" + r.name() + "'");
 		}
 	}
 
+	// floating point wins
 	if(l.is_float() || r.is_float()) {
 		if(l.bytes() > r.bytes()) {
 			return l;
@@ -22,7 +26,21 @@ Type arithmetic_conversion(Type l, Type r) {
 			return r;
 		}
 	}
-	return l;
+
+	// integral promotion is performed on both operands
+	if(l.bytes() < 4) {
+		l = Type("int", 0);
+	}
+	if(r.bytes() < 4) {
+		r = Type("int", 0);
+	}
+
+	// deal with sign
+	if(l.is_signed() || r.is_signed()) {
+		r = Type("unsigned", 0);
+	}
+
+	return Type("int", 0);;
 }
 
 
