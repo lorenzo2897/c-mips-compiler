@@ -78,10 +78,7 @@ void convert_type(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg
 			// INT TO FLOAT
 			out << "    mtc1    $" << s_reg << ", $f0\n";
 			out << "    cvt.s.w $f0, $f0\n";
-			out << "    swc1    $f0, 0($fp)\n";
-			out << "    nop\n";
-			out << "    lw      $" << d_reg << ", 0($fp)\n";
-			out << "    nop\n";
+			out << "    mfc1    $" << d_reg << ", $f0\n";
 			return;
 		} else if(s_type.is_integer() && d_type.bytes() == 8) {
 			// INT TO DOUBLE
@@ -124,10 +121,7 @@ void convert_type(std::ostream &out, unsigned s_reg, Type s_type, unsigned d_reg
 	if(s_type.is_float() && d_type.is_integer()) {
 		if(s_type.bytes() == 4) {
 			// FLOAT TO INT
-			out << "    sw      $" << s_reg << ", 0($fp)\n";
-			out << "    nop\n";
-			out << "    lwc1    $f0, 0($fp)\n";
-			out << "    nop\n";
+			out << "    mtc1    $" << s_reg << ", $f0\n";
 			out << "    trunc.w.s $f0, $f0\n";
 			out << "    mfc1    $" << d_reg << ", $f0\n";
 			return;

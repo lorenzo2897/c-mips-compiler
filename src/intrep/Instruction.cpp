@@ -440,9 +440,47 @@ void NegativeInstruction::PrintMIPS(std::ostream& out, IRContext const& context)
 		context.load_variable(out, source, 8);
 		out << "    subu    $10, $0, $8\n";
 		context.store_variable(out, destination, 10);
+	} else if(context.get_type(source).bytes() == 4) {
+		context.load_variable(out, source, 12);
+		out << "    mtc1    $12, $f0\n";
+		out << "    neg.s   $f0, $f0\n";
+		out << "    mfc1    $8, $f0\n";
+		context.store_variable(out, destination, 8);
 	} else {
-		// TODO: implement floats here
+		context.load_variable(out, source, 12);
+		out << "    sw      $12, 0($fp)\n";
+		out << "    sw      $13, 4($fp)\n";
+		out << "    ldc1    $f0, 0($fp)\n";
+		out << "    neg.d   $f0, $f0\n";
+		out << "    sdc1    $f0, 0($fp)\n";
+		out << "    lw      $8, 0($fp)\n";
+		out << "    lw      $9, 4($fp)\n";
+		out << "    nop\n";
+		context.store_variable(out, destination, 8);
 	}
+}
+
+// *******************************************
+
+void float_operation(std::string type, std::ostream& out) {
+	out << "    mtc1    $12, $f0\n";
+	out << "    mtc1    $14, $f2\n";
+	out << "    " << type << ".s   $f0, $f0, $f2\n";
+	out << "    mfc1    $8, $f0\n";
+}
+
+void double_operation(std::string type, std::ostream& out) {
+	out << "    sw      $12, 0($fp)\n";
+	out << "    sw      $13, 4($fp)\n";
+	out << "    ldc1    $f0, 0($fp)\n";
+	out << "    sw      $14, 0($fp)\n";
+	out << "    sw      $15, 4($fp)\n";
+	out << "    ldc1    $f2, 0($fp)\n";
+	out << "    " << type << ".d   $f0, $f0, $f2\n";
+	out << "    sdc1    $f0, 0($fp)\n";
+	out << "    lw      $8, 0($fp)\n";
+	out << "    lw      $9, 4($fp)\n";
+	out << "    nop\n";
 }
 
 // *******************************************
@@ -458,6 +496,32 @@ void IncrementInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
+void IncrementInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	if(context.get_type(source).is_struct()) {
+		throw compile_error("cannot increment/decrement structs or unions");
+	}
+	if(context.get_type(source).is_integer()) {
+		context.load_variable(out, source, 8);
+		if(decrement) {
+			out << "    addiu   $10, $8, -1\n";
+		} else {
+			out << "    addiu   $10, $8, 1\n";
+		}
+		context.store_variable(out, destination, 10);
+	} else if(context.get_type(source).bytes() == 4) {
+		context.load_variable(out, source, 12);
+		out << "    li      $14, 0x3f800000\n";
+		float_operation(decrement ? "sub" : "add", out);
+		context.store_variable(out, destination, 8);
+	} else {
+		context.load_variable(out, source, 12);
+		out << "    li      $14, 0x3ff00000\n";
+		out << "    move    $15, $0\n";
+		double_operation(decrement ? "sub" : "add", out);
+		context.store_variable(out, destination, 8);
+	}
+}
+
 // *******************************************
 
 AddInstruction::AddInstruction(std::string destination, std::string source1, std::string source2)
@@ -465,6 +529,37 @@ AddInstruction::AddInstruction(std::string destination, std::string source1, std
 
 void AddInstruction::Debug(std::ostream &dst) const {
 	dst << "    add " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+void AddInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load the two operands in registers
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 10);
+	// special case: pointer arithmetic
+	if(context.get_type(source1).is_pointer()) {
+		if(context.get_type(source2).is_integer()) {
+			out << "    li      $11, " << context.get_type(source1).dereference().bytes() << "\n";
+			out << "    mul     $10, $10, $11\n";
+		}
+		out << "    addu    $14, $8, $10\n";
+		context.store_variable(out, destination, 14);
+		return;
+	}
+	// convert them to the destination type
+	Type result_type = context.get_type(destination);
+	convert_type(out, 8, context.get_type(source1), 12, result_type);
+	convert_type(out, 10, context.get_type(source2), 14, result_type);
+	// perform the add
+	if(result_type.is_integer()) {
+		out << "    addu    $8, $12, $14\n";
+		context.store_variable(out, destination, 8);
+	} else if(result_type.bytes() == 4) {
+		float_operation("add", out);
+		context.store_variable(out, destination, 8);
+	} else {
+		double_operation("add", out);
+		context.store_variable(out, destination, 8);
+	}
 }
 
 // *******************************************
@@ -476,6 +571,37 @@ void SubInstruction::Debug(std::ostream &dst) const {
 	dst << "    sub " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
+void SubInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load the two operands in registers
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 10);
+	// special case: pointer arithmetic
+	if(context.get_type(source1).is_pointer()) {
+		if(context.get_type(source2).is_integer()) {
+			out << "    li      $11, " << context.get_type(source1).dereference().bytes() << "\n";
+			out << "    mul     $10, $10, $11\n";
+		}
+		out << "    subu    $14, $8, $10\n";
+		context.store_variable(out, destination, 14);
+		return;
+	}
+	// convert them to the destination type
+	Type result_type = context.get_type(destination);
+	convert_type(out, 8, context.get_type(source1), 12, result_type);
+	convert_type(out, 10, context.get_type(source2), 14, result_type);
+	// perform the subtraction
+	if(result_type.is_integer()) {
+		out << "    subu    $8, $12, $14\n";
+		context.store_variable(out, destination, 8);
+	} else if(result_type.bytes() == 4) {
+		float_operation("sub", out);
+		context.store_variable(out, destination, 8);
+	} else {
+		double_operation("sub", out);
+		context.store_variable(out, destination, 8);
+	}
+}
+
 // *******************************************
 
 MulInstruction::MulInstruction(std::string destination, std::string source1, std::string source2)
@@ -483,6 +609,33 @@ MulInstruction::MulInstruction(std::string destination, std::string source1, std
 
 void MulInstruction::Debug(std::ostream &dst) const {
 	dst << "    mul " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+void MulInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load the two operands in registers
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 10);
+	// convert them to the destination type
+	Type result_type = context.get_type(destination);
+	convert_type(out, 8, context.get_type(source1), 12, result_type);
+	convert_type(out, 10, context.get_type(source2), 14, result_type);
+	// perform the multiplication
+	if(result_type.is_integer()) {
+		if(result_type.is_signed()) {
+			out << "    mult    $12, $14\n";
+		} else {
+			out << "    multu   $12, $14\n";
+		}
+		out << "    nop\n";
+		out << "    mflo    $8\n";
+		context.store_variable(out, destination, 8);
+	} else if(result_type.bytes() == 4) {
+		float_operation("mul", out);
+		context.store_variable(out, destination, 8);
+	} else {
+		double_operation("mul", out);
+		context.store_variable(out, destination, 8);
+	}
 }
 
 // *******************************************
@@ -494,6 +647,33 @@ void DivInstruction::Debug(std::ostream &dst) const {
 	dst << "    div " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
+void DivInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load the two operands in registers
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 10);
+	// convert them to the destination type
+	Type result_type = context.get_type(destination);
+	convert_type(out, 8, context.get_type(source1), 12, result_type);
+	convert_type(out, 10, context.get_type(source2), 14, result_type);
+	// perform the multiplication
+	if(result_type.is_integer()) {
+		if(result_type.is_signed()) {
+			out << "    div     $12, $14\n";
+		} else {
+			out << "    divu    $12, $14\n";
+		}
+		out << "    nop\n";
+		out << "    mflo    $8\n";
+		context.store_variable(out, destination, 8);
+	} else if(result_type.bytes() == 4) {
+		float_operation("div", out);
+		context.store_variable(out, destination, 8);
+	} else {
+		double_operation("div", out);
+		context.store_variable(out, destination, 8);
+	}
+}
+
 // *******************************************
 
 ModInstruction::ModInstruction(std::string destination, std::string source1, std::string source2)
@@ -501,6 +681,29 @@ ModInstruction::ModInstruction(std::string destination, std::string source1, std
 
 void ModInstruction::Debug(std::ostream &dst) const {
 	dst << "    mod " << destination << ", " << source1 << ", " << source2 << std::endl;
+}
+
+void ModInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// load the two operands in registers
+	context.load_variable(out, source1, 8);
+	context.load_variable(out, source2, 10);
+	// convert them to the destination type
+	Type result_type = context.get_type(destination);
+	convert_type(out, 8, context.get_type(source1), 12, result_type);
+	convert_type(out, 10, context.get_type(source2), 14, result_type);
+	// perform the multiplication
+	if(result_type.is_integer()) {
+		if(result_type.is_signed()) {
+			out << "    div     $12, $14\n";
+		} else {
+			out << "    divu    $12, $14\n";
+		}
+		out << "    nop\n";
+		out << "    mfhi    $8\n";
+		context.store_variable(out, destination, 8);
+	} else {
+		throw compile_error("cannot perform modulo on float");
+	}
 }
 
 // *******************************************

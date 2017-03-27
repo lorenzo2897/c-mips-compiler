@@ -207,6 +207,7 @@ private:
 public:
 	IncrementInstruction(std::string destination, std::string source, bool decrement);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -219,6 +220,7 @@ private:
 public:
 	AddInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -231,6 +233,7 @@ private:
 public:
 	SubInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -243,6 +246,7 @@ private:
 public:
 	MulInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -255,6 +259,7 @@ private:
 public:
 	DivInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
@@ -267,6 +272,7 @@ private:
 public:
 	ModInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************
