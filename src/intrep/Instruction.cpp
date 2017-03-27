@@ -392,6 +392,154 @@ void EqualityInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
+void fpu_comparison_instruction(std::ostream& out, char equalityType, std::string floattype, std::string skip_label) {
+	switch (equalityType) {
+		case '=':
+			out << "    c.eq." << floattype << "  $f0, $f2\n";
+			out << "    bc1t    " << skip_label << "\n";
+			break;
+		case '!':
+			out << "    c.eq." << floattype << "  $f0, $f2\n";
+			out << "    bc1f    " << skip_label << "\n";
+			break;
+		case '<':
+			out << "    c.lt." << floattype << "  $f0, $f2\n";
+			out << "    bc1t    " << skip_label << "\n";
+			break;
+		case '>':
+			out << "    c.lt." << floattype << "  $f2, $f0\n";
+			out << "    bc1t    " << skip_label << "\n";
+			break;
+		case 'l':
+			out << "    c.le." << floattype << "  $f0, $f2\n";
+			out << "    bc1t    " << skip_label << "\n";
+			break;
+		case 'g':
+			out << "    c.le." << floattype << "  $f2, $f0\n";
+			out << "    bc1t    " << skip_label << "\n";
+			break;
+		default:
+			throw compile_error("unsupported type of relational operator in EqualityInstruction");
+	}
+}
+
+void EqualityInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	out << "    li      $24, 1\n";
+	std::string skip_label = unique("$L");
+	Type l = context.get_type(source1);
+	Type r = context.get_type(source2);
+	if((l.is_integer() || l.is_pointer()) && (r.is_integer() || r.is_pointer())) {
+		context.load_variable(out, source1, 8);
+		context.load_variable(out, source2, 9);
+		convert_type(out, 8, l, 10, Type("int", 0));
+		convert_type(out, 9, r, 11, Type("int", 0));
+		switch (equalityType) {
+			case '=':
+				out << "    beq     $10, $11, " << skip_label << "\n";
+				break;
+			case '!':
+				out << "    bne     $10, $11, " << skip_label << "\n";
+				break;
+			case '<':
+				if(l.is_signed() && r.is_signed()) {
+					out << "    slt     $25, $10, $11\n";
+				} else {
+					out << "    sltu    $25, $10, $11\n";
+				}
+				out << "    bne     $25, $0, " << skip_label << "\n";
+				break;
+			case '>':
+				if(l.is_signed() && r.is_signed()) {
+					out << "    slt     $25, $11, $10\n";
+				} else {
+					out << "    sltu    $25, $11, $10\n";
+				}
+				out << "    bne     $25, $0, " << skip_label << "\n";
+				break;
+			case 'l':
+				if(l.is_signed() && r.is_signed()) {
+					out << "    slt     $25, $11, $10\n";
+				} else {
+					out << "    sltu    $25, $11, $10\n";
+				}
+				out << "    beq     $25, $0, " << skip_label << "\n";
+				break;
+			case 'g':
+				if(l.is_signed() && r.is_signed()) {
+					out << "    slt     $25, $10, $11\n";
+				} else {
+					out << "    sltu    $25, $10, $11\n";
+				}
+				out << "    beq     $25, $0, " << skip_label << "\n";
+				break;
+			default:
+				throw compile_error("unsupported type of relational operator in EqualityInstruction");
+		}
+
+	} else if(l.is_float() && r.is_integer()) {
+		context.load_variable(out, source1, 12);
+		context.load_variable(out, source2, 8);
+		convert_type(out, 8, r, 14, l);
+		if(l.bytes() == 4) {
+			out << "    mtc1    $12, $f0\n";
+			out << "    mtc1    $14, $f2\n";
+			fpu_comparison_instruction(out, equalityType, "s", skip_label);
+		} else {
+			out << "    sw      $12, 0($fp)\n";
+			out << "    sw      $13, 4($fp)\n";
+			out << "    ldc1    $f0, 0($fp)\n";
+			out << "    sw      $14, 0($fp)\n";
+			out << "    sw      $15, 4($fp)\n";
+			out << "    ldc1    $f2, 0($fp)\n";
+			fpu_comparison_instruction(out, equalityType, "d", skip_label);
+		}
+
+	} else if(l.is_integer() && r.is_float()) {
+		context.load_variable(out, source1, 8);
+		convert_type(out, 8, l, 12, r);
+		context.load_variable(out, source2, 14);
+		if(l.bytes() == 4) {
+			out << "    mtc1    $12, $f0\n";
+			out << "    mtc1    $14, $f2\n";
+			fpu_comparison_instruction(out, equalityType, "s", skip_label);
+		} else {
+			out << "    sw      $12, 0($fp)\n";
+			out << "    sw      $13, 4($fp)\n";
+			out << "    ldc1    $f0, 0($fp)\n";
+			out << "    sw      $14, 0($fp)\n";
+			out << "    sw      $15, 4($fp)\n";
+			out << "    ldc1    $f2, 0($fp)\n";
+			fpu_comparison_instruction(out, equalityType, "d", skip_label);
+		}
+
+	} else if(l.is_float() && r.is_float()) {
+		context.load_variable(out, source1, 8);
+		context.load_variable(out, source2, 10);
+		if(l.bytes() == 8 || r.bytes() == 8) {
+			convert_type(out, 8, l, 12, Type("double", 0));
+			convert_type(out, 10, r, 14, Type("double", 0));
+			out << "    sw      $12, 0($fp)\n";
+			out << "    sw      $13, 4($fp)\n";
+			out << "    ldc1    $f0, 0($fp)\n";
+			out << "    sw      $14, 0($fp)\n";
+			out << "    sw      $15, 4($fp)\n";
+			out << "    ldc1    $f2, 0($fp)\n";
+			fpu_comparison_instruction(out, equalityType, "d", skip_label);
+		} else {
+			out << "    mtc1    $8, $f0\n";
+			out << "    mtc1    $10, $f2\n";
+			fpu_comparison_instruction(out, equalityType, "s", skip_label);
+		}
+
+	} else {
+		throw compile_error((std::string)"relational operator not defined between types '" + l.name() + "' and '" + r.name() + "'");
+	}
+	out << "    nop\n";
+	out << "    li      $24, 0\n";
+	out << "   " << skip_label << ":\n";
+	context.store_variable(out, destination, 24);
+}
+
 // *******************************************
 
 ShiftInstruction::ShiftInstruction(std::string destination, std::string source1, std::string source2, bool doRightShift)
@@ -501,6 +649,7 @@ void IncrementInstruction::PrintMIPS(std::ostream& out, IRContext const& context
 		throw compile_error("cannot increment/decrement structs or unions");
 	}
 	if(context.get_type(source).is_integer()) {
+		// regular integer
 		context.load_variable(out, source, 8);
 		if(decrement) {
 			out << "    addiu   $10, $8, -1\n";
@@ -508,12 +657,25 @@ void IncrementInstruction::PrintMIPS(std::ostream& out, IRContext const& context
 			out << "    addiu   $10, $8, 1\n";
 		}
 		context.store_variable(out, destination, 10);
+
+	} else if(context.get_type(source).is_pointer()) {
+		// increment pointer
+		context.load_variable(out, source, 8);
+		if(decrement) {
+			out << "    addiu   $10, $8, -" << context.get_type(source).dereference().bytes() << "\n";
+		} else {
+			out << "    addiu   $10, $8, " << context.get_type(source).dereference().bytes() << "\n";
+		}
+
 	} else if(context.get_type(source).bytes() == 4) {
+		// float
 		context.load_variable(out, source, 12);
 		out << "    li      $14, 0x3f800000\n";
 		float_operation(decrement ? "sub" : "add", out);
 		context.store_variable(out, destination, 8);
+
 	} else {
+		// double
 		context.load_variable(out, source, 12);
 		out << "    li      $14, 0x3ff00000\n";
 		out << "    move    $15, $0\n";
@@ -535,6 +697,7 @@ void AddInstruction::PrintMIPS(std::ostream& out, IRContext const& context) cons
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
+
 	// special case: pointer arithmetic
 	if(context.get_type(source1).is_pointer()) {
 		if(context.get_type(source2).is_integer()) {
@@ -545,6 +708,14 @@ void AddInstruction::PrintMIPS(std::ostream& out, IRContext const& context) cons
 		context.store_variable(out, destination, 14);
 		return;
 	}
+	if(context.get_type(source2).is_pointer()) {
+		out << "    li      $11, " << context.get_type(source2).dereference().bytes() << "\n";
+		out << "    mul     $8, $8, $11\n";
+		out << "    addu    $14, $8, $10\n";
+		context.store_variable(out, destination, 14);
+		return;
+	}
+
 	// convert them to the destination type
 	Type result_type = context.get_type(destination);
 	convert_type(out, 8, context.get_type(source1), 12, result_type);
@@ -702,7 +873,7 @@ void ModInstruction::PrintMIPS(std::ostream& out, IRContext const& context) cons
 		out << "    mfhi    $8\n";
 		context.store_variable(out, destination, 8);
 	} else {
-		throw compile_error("cannot perform modulo on float");
+		throw compile_error("modulo operands must have integral type");
 	}
 }
 

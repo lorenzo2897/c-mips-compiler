@@ -10,11 +10,19 @@ Type arithmetic_conversion(Type l, Type r) {
 	}
 
 	// pointer arithmetic
+	/* Section 6.3.6 of the C89 standard */
 	if(l.is_pointer()) {
 		if(r.is_integer() || r.equals(l)) {
 			return l;
 		} else {
 			throw compile_error((std::string)"cannot perform pointer arithmetic with type '" + r.name() + "'");
+		}
+	}
+	if(r.is_pointer()) {
+		if(l.is_integer()) {
+			return r;
+		} else {
+			throw compile_error((std::string)"cannot perform pointer arithmetic with type '" + l.name() + "'");
 		}
 	}
 
