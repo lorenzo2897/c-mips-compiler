@@ -534,9 +534,14 @@ CastExpression	: UnaryExpression { $$ = $1; }
 				| '(' TypeSpecifier ')' CastExpression {
 					$$ = new CastExpression($2, 0, dynamic_cast<Expression*>$4);
 				}
+				| '(' TypeSpecifier TypeSpecifier ')' CastExpression {
+					$$ = new CastExpression($2, $3, 0, dynamic_cast<Expression*>$5);
+				}
 				| '(' TypeSpecifier TypeSuffix ')' CastExpression {
-					// TODO: add more TypeSpecifiers
 					$$ = new CastExpression($2, $3->depth, dynamic_cast<Expression*>$5);
+				}
+				| '(' TypeSpecifier TypeSpecifier TypeSuffix ')' CastExpression {
+					$$ = new CastExpression($2, $3, $4->depth, dynamic_cast<Expression*>$6);
 				}
 
 UnaryExpression	: PostfixExpression

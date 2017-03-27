@@ -60,7 +60,6 @@ void ProgramRoot::populate_declarations(VariableMap& bindings, ArrayMap& arrays)
 			arrays[(*itr)->identifier] = ArrayType((*itr)->var_type.dereference(), (*itr)->array_elements);
 		}
 	}
-	// TODO : global variable initialisation
 }
 
 void ProgramRoot::populate_functions(VariableMap& bindings) const {
@@ -135,8 +134,36 @@ void ProgramRoot::CompileMIPS(std::ostream &dst) const {
 			dst << "  " << (*itr).second.alias << ":\n    .word " << (*itr).second.alias << "_arr\n\n";
 		} else {
 			dst << "    .globl " << (*itr).second.alias << "\n    .align 4\n";
-			dst << "  " << (*itr).second.alias << ":\n    .space " << (*itr).second.type.bytes() << "\n\n";
-			// TODO: initialise these global vars
+			// initialise global vars
+			if((*itr).second.type.is_integer()) {
+				bool initialised = false;
+				for(std::vector<Declaration*>::const_iterator di = declarations.begin(); di != declarations.end(); ++di) {
+					if((*di)->identifier == (*itr).first) {
+						if((*di)->initialiser != NULL) {
+							initialised = true;
+							int val;
+							try {
+								val = (*di)->initialiser->evaluate_int(global_bindings);
+							} catch (compile_error e) {
+								val = 0;
+							}
+							if((*itr).second.type.bytes() == 1) {
+								dst << "  " << (*itr).second.alias << ":\n    .byte " << (int8_t)val << "\n\n";
+							} else if((*itr).second.type.bytes() == 2) {
+								dst << "  " << (*itr).second.alias << ":\n    .half " << (int16_t)val << "\n\n";
+							} else {
+								dst << "  " << (*itr).second.alias << ":\n    .word " << val << "\n\n";
+							}
+							break;
+						}
+					}
+				}
+				if(!initialised) {
+					dst << "  " << (*itr).second.alias << ":\n    .space " << (*itr).second.type.bytes() << "\n\n";
+				}
+			} else {
+				dst << "  " << (*itr).second.alias << ":\n    .space " << (*itr).second.type.bytes() << "\n\n";
+			}
 		}
 	}
 

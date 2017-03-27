@@ -27,6 +27,7 @@ public:
 	bool is_global(std::string name) const;
 	unsigned get_stack_offset(std::string name) const;
 	Type get_type(std::string name) const;
+	std::vector<Type> get_function_parameters(std::string name) const;
 	std::string get_variable_address(std::string name) const;
 	// returns
 	std::string get_return_label() const;

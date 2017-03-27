@@ -24,7 +24,6 @@ public:
 
 	virtual Type GetType(VariableMap const& bindings) const = 0;
 
-	// TODO : make these two functions pure virtual once all are implemented
 	virtual std::string MakeIR(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const = 0;
 	virtual std::string MakeIR_lvalue(VariableMap const& bindings, FunctionStack& stack, IRVector& out) const = 0;
 

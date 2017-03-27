@@ -4,11 +4,28 @@ EXIT_CODE=0
 
 # compile the test program
 
-if [[ "$1" == "lscc" ]]; then
-	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
-	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+if [[ "$1" == "c_compiler" ]]; then
+	cat test/c_files/unit/$2.c | cpp | bin/c_compiler > test/out/asm/$2.s
 	if [[ $? -ne 0 ]]; then
 		echo "Failed $2: program did not compile"
+		exit 1
+	fi
+	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed $2: program did not link"
+		exit 1
+	fi
+fi
+
+if [[ "$1" == "lscc" ]]; then
+	cat test/c_files/unit/$2.c | cpp | bin/lscc -S -o test/out/asm/$2.s
+	if [[ $? -ne 0 ]]; then
+		echo "Failed $2: program did not compile"
+		exit 1
+	fi
+	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	if [[ $? -ne 0 ]]; then
+		echo "Failed $2: program did not link"
 		exit 1
 	fi
 fi

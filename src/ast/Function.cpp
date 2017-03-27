@@ -101,12 +101,12 @@ void debug_stack_allocations(std::map<std::string, unsigned> const& array_addres
 							{
 	for(unsigned addr = 0; addr < param_stack; addr++) {
 		if(addr == stack_size) {
-			std::cerr << " -----\n";
+			std::cerr << "#  -----\n";
 		}
-		std::cerr << addr << ": ";
+		std::cerr << "# " << addr << ": ";
 		for(std::map<std::string, unsigned>::const_iterator itr = array_addresses.begin(); itr != array_addresses.end(); ++itr) {
 			if(itr->second == addr) {
-				std::cerr << itr->first;
+				std::cerr << "array data " << itr->first;
 			}
 		}
 		for(std::map<std::string, unsigned>::const_iterator itr = stack_offsets.begin(); itr != stack_offsets.end(); ++itr) {
@@ -157,9 +157,12 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 		parameters_stack += 4;
 	}
 
+	// assign addresses to incoming parameters
 	for(std::vector<Declaration*>::const_iterator itr = parameters.begin(); itr != parameters.end(); ++itr) {
 		std::string param_alias = bindings.at((*itr)->identifier).alias;
-		align_address(parameters_stack, ((*itr)->var_type.is_float() && (*itr)->var_type.bytes() == 8) ? 8 : 4, 8);
+		align_address(parameters_stack, (*itr)->var_type.is_float() ? (*itr)->var_type.bytes() : 4, 8);
+		if((*itr)->var_type.bytes() == 1) parameters_stack += 3;
+		if((*itr)->var_type.bytes() == 2) parameters_stack += 2;
 		stack_offsets[param_alias] = parameters_stack;
 		parameters_stack += (*itr)->var_type.bytes();
 	}
@@ -167,6 +170,8 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	// create a context for the IR language to run in
 	stack.add_variables(bindings, parameters);
 	IRContext context(globals, stack, stack_offsets, function_name, return_type, stack_size);
+	/* */
+	//debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
 
 	// print MIPS assembly code
 	dst << "    .globl " << function_name << "\n    .align 4\n";
@@ -183,13 +188,35 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	dst << "    sw      $5, " << (stack_size+4) << "($fp)\n";
 	dst << "    sw      $6, " << (stack_size+8) << "($fp)\n";
 	dst << "    sw      $7, " << (stack_size+12) << "($fp)\n";
-	/* */
-	//debug_stack_allocations(array_addresses, stack_offsets, stack_size, parameters_stack);
+
+	// being floating point parameters onto the stack
+	if(parameters.size() > 0 && parameters.at(0)->var_type.is_float()) {
+		if(parameters.at(0)->var_type.bytes() == 4) {
+			dst << "    swc1    $f12, " << stack_size << "($fp)\n";
+		} else {
+			dst << "    sdc1    $f12, " << stack_size << "($fp)\n";
+		}
+		if(parameters.size() > 1 && parameters.at(1)->var_type.is_float()) {
+			if(parameters.at(0)->var_type.bytes() == 4) {
+				dst << "    swc1    $f14, " << (stack_size + parameters.at(0)->var_type.bytes()) << "($fp)\n";
+			} else {
+				dst << "    sdc1    $f14, " << (stack_size + parameters.at(0)->var_type.bytes()) << "($fp)\n";
+			}
+		}
+	}
+
+	// assign addresses to array pointers
+	for(std::map<std::string, unsigned>::const_iterator itr = array_addresses.begin(); itr != array_addresses.end(); ++itr) {
+		dst << "    addiu   $8, $fp, " << itr->second << "\n";
+		dst << "    sw      $8, " << stack_offsets.at(itr->first) << "($fp)\n";
+	}
+
+	// emit code
 	dst << "  fnc_" << function_name << "_code:\n";
 	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
 		(*itr)->PrintMIPS(dst, context);
 	}
-	/* */
+
 	dst << "  fnc_" << function_name << "_return:\n";
 	dst << "    move    $sp, $fp\n"; // get back the base stack pointer
 	dst << "    lw      $31, " << (stack_size - 8) << "($sp)" << "\n"; // load return address

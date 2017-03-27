@@ -83,6 +83,16 @@ void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext const& context) c
 			// populate register $2 with return value
 			context.load_variable(out, return_variable, 8);
 			convert_type(out, 8, context.get_type(return_variable), 2, context.get_return_type());
+			// copy it to FPU if float
+			if(context.get_return_type().is_float()) {
+				if(context.get_return_type().bytes() == 4) {
+					out << "    mtc1    $2, $f0\n";
+				} else {
+					out << "    sw      $2, 0($fp)\n";
+					out << "    sw      $3, 4($fp)\n";
+					out << "    ldc1    $f0, 0($fp)\n";
+				}
+			}
 		}
 	}
 	out << "    j       " << context.get_return_label() << "\n";
@@ -905,6 +915,120 @@ void FunctionCallInstruction::Debug(std::ostream &dst) const {
 	for(std::vector<std::string>::const_iterator itr = arguments.begin(); itr != arguments.end(); ++itr) {
 		dst << "      arg " << *itr << std::endl;
 	}
+}
+
+void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+	// get the information we need about the function
+	Type return_type = context.get_type(function_name);
+	std::vector<Type> params = context.get_function_parameters(function_name);
+
+	// calculate the total stack to allocate (plus 8 extra bytes just in case)
+	unsigned allocate = 8;
+	for(std::vector<Type>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
+		align_address(allocate, itr->is_float() ? 8 : 4, 8);
+		allocate += itr->bytes();
+	}
+	if(return_type.is_struct()) {
+		align_address(allocate, 8, 8);
+		allocate += return_type.bytes();
+	}
+	align_address(allocate, 8, 8);
+	out << "    addiu   $sp, $sp, -" << allocate << "\n";
+
+	// check that the signatures are compatible
+	if(params.size() != arguments.size()) {
+		throw compile_error((std::string)"cannot call function '" + function_name + "': incorrect number of parameters.");
+	}
+
+	// convert each argument and put it onto the stack
+	unsigned current_offset = 0;
+	if(return_type.is_struct()) {
+		current_offset += 4;
+	}
+	for(unsigned i = 0; i < params.size(); ++i) {
+		Type orig = context.get_type(arguments.at(i));
+		Type target = params.at(i);
+		align_address(current_offset, target.is_float() ? target.bytes() : 4, 8);
+		if(orig.is_struct() || target.is_struct()) {
+			if(orig.equals(target)) {
+				out << "addiu $3, $sp, " << current_offset << "\n";
+				context.copy(out, arguments.at(i), "",orig.bytes());
+				current_offset += orig.bytes();
+			} else {
+				throw compile_error((std::string)"cannot call function '" + function_name + "': incompatible parameters.");
+			}
+		} else {
+			context.load_variable(out, arguments.at(i), 8);
+			convert_type(out, 8, orig, 10, target);
+			if(target.bytes() == 8) {
+				out << "    sw      $10, " << current_offset << "($sp)\n";
+				out << "    sw      $11, " << (current_offset+4) << "($sp)\n";
+				current_offset += 8;
+			} else {
+				out << "    sw      $10, " << current_offset << "($sp)\n";
+				current_offset += 4;
+			}
+		}
+	}
+
+	// allocate space for returned struct
+	unsigned struct_offset = 0;
+	if(return_type.is_struct()) {
+		align_address(current_offset, 8, 8);
+		struct_offset = current_offset;
+		out << "    addiu   $4, $sp, " << struct_offset << "\n";
+		out << "    sw      $4, 0($sp)\n";
+	}
+
+	// put the first 4 words into registers
+	out << "    lw      $4, 0($sp)\n";
+	out << "    lw      $5, 4($sp)\n";
+	out << "    lw      $6, 8($sp)\n";
+	out << "    lw      $7, 12($sp)\n";
+
+	// put floats into their registers if necessary
+	if(params.size() > 0 && params.at(0).is_float()) {
+		if(params.at(0).bytes() == 4) {
+			out << "    lwc1    $f12, 0($sp)\n";
+		} else {
+			out << "    ldc1    $f12, 0($sp)\n";
+		}
+		if(params.size() > 1 && params.at(1).is_float()) {
+			if(params.at(0).bytes() == 4) {
+				out << "    lwc1    $f14, " << params.at(0).bytes() << "($sp)\n";
+			} else {
+				out << "    ldc1    $f14, " << params.at(0).bytes() << "($sp)\n";
+			}
+		}
+	}
+
+	// jump and link
+	out << "    .option	pic0\n";
+	out << "    jal     " << function_name << "\n";
+	out << "    nop\n";
+	out << "    .option	pic2\n";
+
+	// store the result of the function call into our destination
+	if(return_type.is_struct()) {
+		// copy the struct from its address into the destination
+		out << "    addiu   $2, $sp, " << struct_offset << "\n";
+		context.copy(out, "", return_result, return_type.bytes());
+	} else {
+		if(return_type.is_float()) {
+			if(return_type.bytes() == 8) {
+				out << "    sdc1    $f0, 0($sp)\n";
+				out << "    lw      $2, 0($sp)\n";
+				out << "    lw      $3, 4($sp)\n";
+			} else {
+				out << "    mfc1    $2, $f0\n";
+			}
+		}
+		if(return_type.builtin_type != Type::Void)
+			context.store_variable(out, return_result, 2);
+	}
+
+	// free the stack
+	out << "    addiu   $sp, $sp, " << allocate << "\n";
 }
 
 // *******************************************

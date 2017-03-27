@@ -31,6 +31,7 @@ public:
 
 	Type();
 	Type(std::string specifier, int pointer_depth);
+	Type(std::string specifier1, std::string specifier2, int pointer_depth);
 	Type(std::vector<std::string> specifiers, int pointer_depth);
 
 	void set_specifiers(std::vector<std::string> s);

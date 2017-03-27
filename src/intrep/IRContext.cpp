@@ -38,6 +38,18 @@ Type IRContext::get_type(std::string name) const {
 	}
 }
 
+std::vector<Type> IRContext::get_function_parameters(std::string name) const {
+	if(globals.count(name)) {
+		if(globals.at(name).is_function) {
+			return globals.at(name).params;
+		} else {
+			throw compile_error((std::string)"IR: global variable " + name + " is not a function");
+		}
+	} else {
+		throw compile_error((std::string)"IR: function " + name + " not found in globals");
+	}
+}
+
 std::string IRContext::get_variable_address(std::string name) const {
 	if(is_global(name)) {
 		return (std::string)"%got(" + name + ")($gp)";

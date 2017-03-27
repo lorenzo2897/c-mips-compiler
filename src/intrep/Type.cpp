@@ -19,6 +19,13 @@ Type::Type(std::string specifier, int pointer_depth) : pointer_depth(pointer_dep
 	set_specifiers(spec_vector);
 }
 
+Type::Type(std::string s1, std::string s2, int pointer_depth) : pointer_depth(pointer_depth) {
+	std::vector<std::string> spec_vector;
+	spec_vector.push_back(s1);
+	spec_vector.push_back(s2);
+	set_specifiers(spec_vector);
+}
+
 void Type::set_specifiers(std::vector<std::string> s) {
 	if(s.size() == 1) {
 		std::string first = s.at(0);
@@ -90,6 +97,14 @@ void Type::set_specifiers(std::vector<std::string> s) {
 		} else if(first == "unsigned" && second == "short" && third == "int") {
 			builtin_type = UnsignedShort; return;
 		} else if(first == "signed" && second == "short" && third == "int") {
+			builtin_type = SignedShort; return;
+		} else if(first == "long" && second == "unsigned" && third == "int") {
+			builtin_type = UnsignedLong; return;
+		} else if(first == "long" && second == "signed" && third == "int") {
+			builtin_type = SignedLong; return;
+		} else if(first == "short" && second == "unsigned" && third == "int") {
+			builtin_type = UnsignedShort; return;
+		} else if(first == "short" && second == "signed" && third == "int") {
 			builtin_type = SignedShort; return;
 		}
 	}

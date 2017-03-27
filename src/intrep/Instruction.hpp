@@ -299,6 +299,7 @@ private:
 public:
 	FunctionCallInstruction(std::string return_result, std::string function_name, std::vector<std::string> arguments);
 	virtual void Debug(std::ostream& dst) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
 };
 
 // *******************************************

@@ -15,6 +15,7 @@ public:
 
 	CastExpression();
 	CastExpression(std::string cast_type, int pointer_depth, Expression* expression);
+	CastExpression(std::string cast_type1, std::string cast_type2, int pointer_depth, Expression* expression);
 
 	virtual void Debug(std::ostream& dst, int indent) const;
 	virtual Type GetType(VariableMap const& bindings) const;

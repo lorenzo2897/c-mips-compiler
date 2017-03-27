@@ -9,6 +9,13 @@ cast_type(Type(cast_type, pointer_depth)),
 rvalue(expression)
 {}
 
+CastExpression::CastExpression(std::string cast_type1, std::string cast_type2, int pointer_depth, Expression* expression)
+:
+Expression(),
+cast_type(Type(cast_type1, cast_type2, pointer_depth)),
+rvalue(expression)
+{}
+
 void CastExpression::Debug(std::ostream& dst, int indent) const {
 	dst << "((";
 	dst << cast_type.name();
