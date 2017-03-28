@@ -16,7 +16,7 @@
 class Instruction {
 public:
 	virtual void Debug(std::ostream& dst) const = 0;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -31,7 +31,7 @@ private:
 public:
 	LabelInstruction(std::string name);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class GotoInstruction : public Instruction {
@@ -40,7 +40,7 @@ private:
 public:
 	GotoInstruction(std::string name);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class GotoIfEqualInstruction : public Instruction {
@@ -51,7 +51,7 @@ private:
 public:
 	GotoIfEqualInstruction(std::string name, std::string variable, int32_t value);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -63,7 +63,7 @@ public:
 	ReturnInstruction();
 	ReturnInstruction(std::string return_variable);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -77,7 +77,7 @@ private:
 public:
 	ConstantInstruction(std::string destination, Type type, uint32_t dataLo, uint32_t dataHi = 0);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class StringInstruction : public Instruction {
@@ -87,7 +87,7 @@ private:
 public:
 	StringInstruction(std::string destination, std::string data);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -99,7 +99,7 @@ private:
 public:
 	MoveInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class AssignInstruction : public Instruction {
@@ -109,7 +109,7 @@ private:
 public:
 	AssignInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -121,7 +121,7 @@ private:
 public:
 	AddressOfInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class DereferenceInstruction : public Instruction {
@@ -131,7 +131,7 @@ private:
 public:
 	DereferenceInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -145,7 +145,7 @@ private:
 public:
 	LogicalInstruction(std::string destination, std::string source1, std::string source2, char logicalType);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class BitwiseInstruction : public Instruction {
@@ -157,7 +157,7 @@ private:
 public:
 	BitwiseInstruction(std::string destination, std::string source1, std::string source2, char operatorType);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 class EqualityInstruction : public Instruction {
@@ -169,7 +169,7 @@ private:
 public:
 	EqualityInstruction(std::string destination, std::string source1, std::string source2, char equalityType);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -183,7 +183,7 @@ private:
 public:
 	ShiftInstruction(std::string destination, std::string source1, std::string source2, bool doRightShift);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -195,7 +195,7 @@ private:
 public:
 	NegativeInstruction(std::string destination, std::string source);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -208,7 +208,7 @@ private:
 public:
 	IncrementInstruction(std::string destination, std::string source, bool decrement);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -221,7 +221,7 @@ private:
 public:
 	AddInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -234,7 +234,7 @@ private:
 public:
 	SubInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -247,7 +247,7 @@ private:
 public:
 	MulInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -260,7 +260,7 @@ private:
 public:
 	DivInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -273,7 +273,7 @@ private:
 public:
 	ModInstruction(std::string destination, std::string source1, std::string source2);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -286,7 +286,7 @@ private:
 public:
 	CastInstruction(std::string destination, std::string source, Type cast_type);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -299,7 +299,7 @@ private:
 public:
 	FunctionCallInstruction(std::string return_result, std::string function_name, std::vector<std::string> arguments);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 // *******************************************
@@ -312,7 +312,7 @@ private:
 public:
 	MemberAccessInstruction(std::string destination, std::string base, unsigned offset);
 	virtual void Debug(std::ostream& dst) const;
-	virtual void PrintMIPS(std::ostream& out, IRContext const& context) const;
+	virtual void PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const;
 };
 
 #endif

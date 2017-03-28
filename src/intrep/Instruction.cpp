@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-void Instruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void Instruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	out << "    undefined\n";
 }
 
@@ -17,7 +17,7 @@ void LabelInstruction::Debug(std::ostream &dst) const {
 	dst << "  " << label_name << ":" << std::endl;
 }
 
-void LabelInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void LabelInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	out << "  " << label_name << ":\n";
 }
 
@@ -29,7 +29,7 @@ void GotoInstruction::Debug(std::ostream &dst) const {
 	dst << "    goto " << label_name << std::endl;
 }
 
-void GotoInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void GotoInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	out << "    j       " << label_name << "\n";
 	out << "    nop\n";
 }
@@ -42,7 +42,7 @@ void GotoIfEqualInstruction::Debug(std::ostream &dst) const {
 	dst << "    beq " << variable << ", " << value << ", " << label_name << std::endl;
 }
 
-void GotoIfEqualInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void GotoIfEqualInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	std::string skip_label = unique("$L");
 	context.load_variable(out, variable, 8);
 	convert_type(out, 8, context.get_type(variable), 10, Type("int", 0));
@@ -67,7 +67,7 @@ void ReturnInstruction::Debug(std::ostream &dst) const {
 	dst << "    return " << return_variable << std::endl;
 }
 
-void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void ReturnInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(return_variable != "") {
 		if(context.get_return_type().is_struct()) {
 			// make sure the structs are equal
@@ -113,7 +113,7 @@ void ConstantInstruction::Debug(std::ostream &dst) const {
 	<< std::dec << std::endl;
 }
 
-void ConstantInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void ConstantInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(type.bytes() == 8) {
 		out << "    li      $8, " << dataHi <<"\n";
 		out << "    li      $9, " << dataLo <<"\n";
@@ -147,10 +147,12 @@ void StringInstruction::Debug(std::ostream &dst) const {
 	dst << "    ascii " << destination << " " << data << std::endl;
 }
 
-void StringInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
-	out << "    string_data_" << destination << ":\n";
-	out << "    .ascii \"" << very_conservative_escape(data) << "\\000\"\n";
-	out << "    li      $8, string_data_" << destination << "\n";
+void StringInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
+	std::stringstream ss;
+	buff << "    .align 2\n";
+	buff << "  string_data_" << destination << ":\n";
+	buff << "    .ascii \"" << very_conservative_escape(data) << "\\000\"\n";
+	out << "    addiu   $8, $gp, %got(string_data_" << destination << ")\n";
 	context.store_variable(out, destination, 8);
 }
 
@@ -163,7 +165,7 @@ void MoveInstruction::Debug(std::ostream &dst) const {
 	dst << "    move " << destination << ", " << source << std::endl;
 }
 
-void MoveInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void MoveInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.get_type(destination).is_struct() && context.get_type(destination).equals(context.get_type(source))) {
 		// do a byte-wise copy
 		context.copy(out, source, destination, context.get_type(destination).bytes());
@@ -182,7 +184,7 @@ void AssignInstruction::Debug(std::ostream &dst) const {
 	dst << "    assign *" << destination << ", " << source << std::endl;
 }
 
-void AssignInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void AssignInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// get the address of the destination to assign
 	context.load_variable(out, destination, 3);
 
@@ -218,7 +220,7 @@ void AddressOfInstruction::Debug(std::ostream &dst) const {
 	dst << "    addressOf " << destination << ", &" << source << std::endl;
 }
 
-void AddressOfInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void AddressOfInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.is_global(source)) {
 		out << "    addiu   $8, $gp, %got(" << source << ")\n";
 	} else {
@@ -234,7 +236,7 @@ void DereferenceInstruction::Debug(std::ostream &dst) const {
 	dst << "    dereference " << destination << ", *" << source << std::endl;
 }
 
-void DereferenceInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void DereferenceInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.is_global(source)) {
 		out << "    addiu   $2, $gp, %got(" << source << ")\n";
 		out << "    lw      $2, 0($2)\n";
@@ -266,7 +268,7 @@ void LogicalInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
-void LogicalInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void LogicalInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load and convert to ints: in $10 and $13
 	context.load_variable(out, source1, 8);
 	convert_type(out, 8, context.get_type(source1), 10, Type("int", 0));
@@ -339,7 +341,7 @@ void BitwiseInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
-void BitwiseInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void BitwiseInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(!context.get_type(source1).is_integer()) {
 		throw compile_error("cannot perform a bitwise operation on structs, unions, or floats");
 	}
@@ -433,7 +435,7 @@ void fpu_comparison_instruction(std::ostream& out, char equalityType, std::strin
 	}
 }
 
-void EqualityInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void EqualityInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	out << "    li      $24, 1\n";
 	std::string skip_label = unique("$L");
 	Type l = context.get_type(source1);
@@ -563,7 +565,7 @@ void ShiftInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
-void ShiftInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void ShiftInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(!context.get_type(source1).is_integer() || !context.get_type(source1).is_integer()) {
 		throw compile_error("cannot perform a shift operation on structs, unions, or floats");
 	}
@@ -590,7 +592,7 @@ void NegativeInstruction::Debug(std::ostream &dst) const {
 	dst << "    negative " << destination << ", " << source << std::endl;
 }
 
-void NegativeInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void NegativeInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.get_type(source).is_struct()) {
 		throw compile_error("cannot make structs or unions negative");
 	}
@@ -654,7 +656,7 @@ void IncrementInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
-void IncrementInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void IncrementInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.get_type(source).is_struct()) {
 		throw compile_error("cannot increment/decrement structs or unions");
 	}
@@ -703,7 +705,7 @@ void AddInstruction::Debug(std::ostream &dst) const {
 	dst << "    add " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
-void AddInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void AddInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
@@ -752,7 +754,7 @@ void SubInstruction::Debug(std::ostream &dst) const {
 	dst << "    sub " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
-void SubInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void SubInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
@@ -792,7 +794,7 @@ void MulInstruction::Debug(std::ostream &dst) const {
 	dst << "    mul " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
-void MulInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void MulInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
@@ -828,7 +830,7 @@ void DivInstruction::Debug(std::ostream &dst) const {
 	dst << "    div " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
-void DivInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void DivInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
@@ -864,7 +866,7 @@ void ModInstruction::Debug(std::ostream &dst) const {
 	dst << "    mod " << destination << ", " << source1 << ", " << source2 << std::endl;
 }
 
-void ModInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void ModInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// load the two operands in registers
 	context.load_variable(out, source1, 8);
 	context.load_variable(out, source2, 10);
@@ -896,7 +898,7 @@ void CastInstruction::Debug(std::ostream &dst) const {
 	dst << "    cast " << destination << ", " << source << ", " << cast_type.name() << std::endl;
 }
 
-void CastInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void CastInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.get_type(source).is_struct() || cast_type.is_struct()) {
 		throw compile_error("cannot cast structs");
 	}
@@ -917,7 +919,7 @@ void FunctionCallInstruction::Debug(std::ostream &dst) const {
 	}
 }
 
-void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	// get the information we need about the function
 	Type return_type = context.get_type(function_name);
 	std::vector<Type> params = context.get_function_parameters(function_name);
@@ -1040,7 +1042,7 @@ void MemberAccessInstruction::Debug(std::ostream &dst) const {
 	dst << "    member " << destination << ", " << base << " + " << offset << std::endl;
 }
 
-void MemberAccessInstruction::PrintMIPS(std::ostream& out, IRContext const& context) const {
+void MemberAccessInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	context.load_variable(out, base, 8);
 	out << "    addiu   $8, $8, " << offset << "\n";
 	context.store_variable(out, destination, 8);

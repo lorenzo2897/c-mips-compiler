@@ -1,6 +1,6 @@
 /* fibonacci series */
 
-#include <stdio.h>
+#include "../framework/integration_driver.h"
 
 int fib(int n) {
 	if(n == 0) {
@@ -16,7 +16,8 @@ int main(int argc, char const *argv[]) {
 	int i;
 	for (i = 0; i < 20; i++) {
 		int f = fib(i);
-		printf("%d\n", f);
+		print_int(f);
+		print_str(" ");
 	}
 	return 0;
 }

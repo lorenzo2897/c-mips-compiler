@@ -1,5 +1,7 @@
 #include "Function.hpp"
 
+#include <sstream>
+
 Function::Function() : Scope(), prototype_only(false) {}
 
 void Function::merge_parameters(Scope *scope) {
@@ -124,7 +126,7 @@ void debug_stack_allocations(std::map<std::string, unsigned> const& array_addres
 	}
 }
 
-void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
+void Function::CompileMIPS(VariableMap globals, std::ostream &dst, std::ostream &buff) const {
 	VariableMap bindings = globals;
 	FunctionStack stack;
 	IRVector out;
@@ -214,7 +216,7 @@ void Function::CompileMIPS(VariableMap globals, std::ostream &dst) const {
 	// emit code
 	dst << "  fnc_" << function_name << "_code:\n";
 	for(IRVector::const_iterator itr = out.begin(); itr != out.end(); ++itr) {
-		(*itr)->PrintMIPS(dst, context);
+		(*itr)->PrintMIPS(dst, context, buff);
 	}
 
 	dst << "  fnc_" << function_name << "_return:\n";

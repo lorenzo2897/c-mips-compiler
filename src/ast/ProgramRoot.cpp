@@ -186,10 +186,16 @@ void ProgramRoot::CompileMIPS(std::ostream &dst) const {
 	populate_functions(global_bindings);
 
 	// generate code for every function
+	std::stringstream codeout, buff;
+	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
+		(*itr)->CompileMIPS(global_bindings, codeout, buff);
+	}
+
+	// print it
+	dst << std::endl;
+	dst << buff.str();
 	dst << std::endl;
 	dst << ".text\n\n";
-	for(std::vector<Function*>::const_iterator itr = functions.begin(); itr != functions.end(); ++itr) {
-		(*itr)->CompileMIPS(global_bindings, dst);
-	}
+	dst << codeout.str();
 
 }

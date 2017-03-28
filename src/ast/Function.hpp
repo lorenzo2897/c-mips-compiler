@@ -29,7 +29,7 @@ public:
 	virtual void PrintXML(std::ostream& dst, int indent) const;
 
 	virtual void CompileIR(VariableMap globals, std::ostream& dst) const;
-	virtual void CompileMIPS(VariableMap globals, std::ostream& dst) const;
+	virtual void CompileMIPS(VariableMap globals, std::ostream& dst, std::ostream& buff) const;
 };
 
 #endif
