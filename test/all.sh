@@ -58,7 +58,7 @@ echo "# make clean" > $LOGS/make_all.txt 2>&1
 make clean >> $LOGS/make_all.txt 2>&1
 echo "Performing a make all"
 echo "# make all" >> $LOGS/make_all.txt 2>&1
-make all -j >> $LOGS/make_all.txt 2>&1
+make all >> $LOGS/make_all.txt 2>&1
 PASS=$?
 
 echo "<div>" >> $HTML
