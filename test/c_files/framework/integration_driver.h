@@ -7,6 +7,7 @@ void print_uint(int a);
 void print_float(double a);
 void print_ptr(void* a);
 
+void scan_str(char* a);
 void scan_int(int* a);
 void scan_uint(int* a);
 

@@ -25,6 +25,10 @@ void print_ptr(void* a) {
 }
 
 
+void scan_str(char* a) {
+	scanf("%s", a);
+}
+
 void scan_int(int* a) {
 	scanf("%d", a);
 }
