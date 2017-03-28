@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-Function::Function() : Scope(), prototype_only(false) {}
+Function::Function() : Scope(), prototype_only(false), has_ellipsis(false) {}
 
 void Function::merge_parameters(Scope *scope) {
 	parameters.insert(parameters.end(), scope->declarations.begin(), scope->declarations.end());

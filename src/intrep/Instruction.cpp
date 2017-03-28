@@ -934,6 +934,13 @@ void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext& context, s
 		align_address(allocate, itr->is_float() ? 8 : 4, 8);
 		allocate += itr->bytes();
 	}
+	if(arguments.size() > params.size()) { // for ellipsis functions
+		for(unsigned i = params.size(); i < arguments.size(); ++i) {
+			Type arg = context.get_type(arguments.at(i));
+			align_address(allocate, arg.is_float() ? 8 : 4, 8);
+			allocate += arg.bytes();
+		}
+	}
 	if(return_type.is_struct()) {
 		align_address(allocate, 8, 8);
 		allocate += return_type.bytes();
@@ -942,7 +949,7 @@ void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext& context, s
 	out << "    addiu   $sp, $sp, -" << allocate << "\n";
 
 	// check that the signatures are compatible
-	if(params.size() != arguments.size()) {
+	if(params.size() > arguments.size()) {
 		throw compile_error((std::string)"cannot call function '" + function_name + "': incorrect number of parameters.");
 	}
 
@@ -967,6 +974,30 @@ void FunctionCallInstruction::PrintMIPS(std::ostream& out, IRContext& context, s
 			context.load_variable(out, arguments.at(i), 8);
 			convert_type(out, 8, orig, 10, target);
 			if(target.bytes() == 8) {
+				out << "    sw      $10, " << current_offset << "($sp)\n";
+				out << "    sw      $11, " << (current_offset+4) << "($sp)\n";
+				current_offset += 8;
+			} else {
+				out << "    sw      $10, " << current_offset << "($sp)\n";
+				current_offset += 4;
+			}
+		}
+	}
+	// add any additional arguments onto the end of the stack
+	for(unsigned i = params.size(); i < arguments.size(); ++i) {
+		Type arg = context.get_type(arguments.at(i));
+		align_address(current_offset, arg.is_float() ? 8 : 4, 8);
+		if(arg.is_struct()) {
+			out << "addiu $3, $sp, " << current_offset << "\n";
+			context.copy(out, arguments.at(i), "",arg.bytes());
+			current_offset += arg.bytes();
+		} else {
+			context.load_variable(out, arguments.at(i), 10);
+			// all floats are promoted to doubles: 6.3.2.2 of the standard
+			if(arg.is_float() && arg.bytes() == 4) {
+				convert_type(out, 10, arg, 10, Type("double", 0));
+			}
+			if(arg.bytes() == 8) {
 				out << "    sw      $10, " << current_offset << "($sp)\n";
 				out << "    sw      $11, " << (current_offset+4) << "($sp)\n";
 				current_offset += 8;

@@ -116,6 +116,21 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 						// transfer the parameter list
 						dynamic_cast<Function*>$$->merge_parameters(dynamic_cast<Scope*>$4);
 					}
+					| DeclarationSpecifiers Declarator '(' FunctionParameterList ',' ELLIPSIS ')' ';' {
+						// function declaration
+						$$ = new Function();
+						dynamic_cast<Function*>$$->prototype_only = true;
+						dynamic_cast<Function*>$$->has_ellipsis = true;
+
+						// give the function a name
+						dynamic_cast<Function*>$$->function_name = dynamic_cast<Declaration*>$2->identifier;
+
+						// set the type
+						dynamic_cast<Function*>$$->return_type = Type(*$1, dynamic_cast<Declaration*>$2->var_type.pointer_depth);
+
+						// transfer the parameter list
+						dynamic_cast<Function*>$$->merge_parameters(dynamic_cast<Scope*>$4);
+					}
 					| DeclarationSpecifiers Function {
 						// function definition
 						$$ = $2;

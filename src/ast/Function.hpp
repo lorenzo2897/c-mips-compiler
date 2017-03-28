@@ -22,6 +22,7 @@ public:
 	Type return_type;
 	std::vector<Declaration*> parameters;
 	bool prototype_only;
+	bool has_ellipsis;
 
 	void merge_parameters(Scope* scope);
 
