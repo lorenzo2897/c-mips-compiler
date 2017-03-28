@@ -1,6 +1,6 @@
 /* integer square root */
 
-#include <stdio.h>
+#include "../framework/integration_driver.h"
 
 unsigned my_sqrt(unsigned x) {
 	unsigned root = 1, square = 1;
@@ -15,10 +15,12 @@ unsigned my_sqrt(unsigned x) {
 int main(int argc, char const *argv[]) {
 	for(;;) {
 		unsigned x, in;
-		printf("please enter an integer: ");
-		scanf("%u", &in);
+		print_str("please enter an integer: ");
+		scan_uint(&in);
 		x = my_sqrt(in);
-		printf("floor of square root: %d\n", x);
+		print_str("floor of square root: ");
+		print_int(x);
+		print_str("\n");
 	}
 	return 0;
 }

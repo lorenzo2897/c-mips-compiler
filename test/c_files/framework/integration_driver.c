@@ -12,12 +12,25 @@ void print_int(int a) {
 	printf("%d", a);
 }
 
+void print_uint(int a) {
+	printf("%u", a);
+}
+
 void print_float(double a) {
 	printf("%f", a);
 }
 
 void print_ptr(void* a) {
 	printf("%p", a);
+}
+
+
+void scan_int(int* a) {
+	scanf("%d", a);
+}
+
+void scan_uint(unsigned* a) {
+	scanf("%u", a);
 }
 
 

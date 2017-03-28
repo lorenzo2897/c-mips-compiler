@@ -10,7 +10,7 @@ if [[ "$1" == "c_compiler" ]]; then
 		echo "Failed $2: program did not compile"
 		exit 1
 	fi
-	mips-linux-gnu-gcc -std=c90 -static test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
+	mips-linux-gnu-gcc -std=c90 -static -mfp32 test/c_files/framework/unit_driver.c test/out/asm/$2.s -o test/out/unit/$2
 	if [[ $? -ne 0 ]]; then
 		echo "Failed $2: program did not link"
 		exit 1
