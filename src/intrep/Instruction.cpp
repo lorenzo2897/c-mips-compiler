@@ -152,7 +152,9 @@ void StringInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::os
 	buff << "    .align 2\n";
 	buff << "  string_data_" << destination << ":\n";
 	buff << "    .ascii \"" << very_conservative_escape(data) << "\\000\"\n";
-	out << "    addiu   $8, $gp, %got(string_data_" << destination << ")\n";
+	out << "    lui     $8, %hi(string_data_" << destination << ")\n";
+	out << "    addiu   $8, $8, %lo(string_data_" << destination << ")\n";
+	out << "    nop\n";
 	context.store_variable(out, destination, 8);
 }
 
@@ -222,7 +224,8 @@ void AddressOfInstruction::Debug(std::ostream &dst) const {
 
 void AddressOfInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.is_global(source)) {
-		out << "    addiu   $8, $gp, %got(" << source << ")\n";
+		out << "    lui     $8, %hi(" << source << ")\n";
+		out << "    addiu   $8, $8, %lo(" << source << ")\n";
 	} else {
 		out << "    addiu   $8, $fp, " << context.get_stack_offset(source) << "\n";
 	}
@@ -238,7 +241,8 @@ void DereferenceInstruction::Debug(std::ostream &dst) const {
 
 void DereferenceInstruction::PrintMIPS(std::ostream& out, IRContext& context, std::ostream& buff) const {
 	if(context.is_global(source)) {
-		out << "    addiu   $2, $gp, %got(" << source << ")\n";
+		out << "    lui     $2, %hi(" << source << ")\n";
+		out << "    addiu   $2, $2, %lo(" << source << ")\n";
 		out << "    lw      $2, 0($2)\n";
 	} else {
 		out << "    lw      $2, " << context.get_stack_offset(source) << "($fp)\n";

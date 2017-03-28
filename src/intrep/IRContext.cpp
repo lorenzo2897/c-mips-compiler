@@ -50,16 +50,6 @@ std::vector<Type> IRContext::get_function_parameters(std::string name) const {
 	}
 }
 
-std::string IRContext::get_variable_address(std::string name) const {
-	if(is_global(name)) {
-		return (std::string)"%got(" + name + ")($gp)";
-	} else {
-		std::stringstream ss;
-		ss << get_stack_offset(name) << "($fp)";
-		return ss.str();
-	}
-}
-
 std::string IRContext::get_return_label() const {
 	return (std::string)"fnc_" + func_name + "_return";
 }
@@ -94,7 +84,8 @@ void IRContext::load_variable(std::ostream &out, std::string source, unsigned re
 	}
 	// is it a labeled variable or local?
 	if(is_global(source)) {
-		out << "    addiu   $2, $gp, %got(" << source << ")\n";
+		out << "    lui     $2, %hi(" << source << ")\n";
+		out << "    addiu   $2, $2, %lo(" << source << ")\n";
 		out << "    " << load_instr << "     $" << reg_number << ", 0($2)\n";
 		if(src_type.bytes() == 8) {
 			out << "    lw      $" << (reg_number+1) << ", 4($2)\n";
@@ -128,7 +119,8 @@ void IRContext::store_variable(std::ostream &out, std::string destination, unsig
 	}
 	// is it a labeled variable or local?
 	if(is_global(destination)) {
-		out << "    addiu   $3, $gp, %got(" << destination << ")\n";
+		out << "    lui     $3, %hi(" << destination << ")\n";
+		out << "    addiu   $3, $3, %lo(" << destination << ")\n";
 		out << "    " << store_instr << "      $" << reg_number << ", 0($3)\n";
 		if(dst_type.bytes() == 8) {
 			out << "    sw      $" << (reg_number+1) << ", 4($3)\n";
@@ -147,14 +139,16 @@ void IRContext::copy(std::ostream &out, std::string source, std::string destinat
 	// load addresses of any variable in global
 	if(source != "") {
 		if(is_global(source)) {
-			out << "    addiu   $2, $gp, %got(" << source << ")\n";
+			out << "    lui     $2, %hi(" << source << ")\n";
+			out << "    addiu   $2, $2, %lo(" << source << ")\n";
 		} else {
 			out << "    addiu   $2, $fp, " << get_stack_offset(source) << "\n";
 		}
 	}
 	if(destination != "") {
 		if(is_global(destination)) {
-			out << "    addiu   $3, $gp, %got(" << destination << ")\n";
+			out << "    lui     $3, %hi(" << destination << ")\n";
+			out << "    addiu   $3, $3, %lo(" << destination << ")\n";
 		} else {
 			out << "    addiu   $3, $fp, " << get_stack_offset(destination) << "\n";
 		}

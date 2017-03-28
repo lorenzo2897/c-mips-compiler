@@ -17,7 +17,7 @@ int coprime(int a, int b) {
 }
 
 int main(int argc, char const *argv[]) {
-	int iterations = 500;
+	int iterations = 5000000;
 	int sum = 0;
 	int i;
 	double pi;
@@ -37,8 +37,9 @@ int main(int argc, char const *argv[]) {
 
 	// calculate pi
 
-	pi = (6.0 / sum * iterations);
+	pi = math_sqrt(6.0 / sum * iterations);
 
+	print_str("pi ~= ");
 	print_float(pi);
 	print_str("\n");
 }

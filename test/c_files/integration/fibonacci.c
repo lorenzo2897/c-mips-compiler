@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
 	for (i = 0; i < 20; i++) {
 		int f = fib(i);
 		print_int(f);
-		print_str(" ");
+		print_str("\n");
 	}
 	return 0;
 }
