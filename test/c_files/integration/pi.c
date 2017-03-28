@@ -1,9 +1,6 @@
 /* calculating pi */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
+#include "../framework/integration_driver.h"
 
 int gcd(int a, int b) {
   int c;
@@ -20,18 +17,18 @@ int coprime(int a, int b) {
 }
 
 int main(int argc, char const *argv[]) {
-	int iterations = 10000000;
+	int iterations = 500;
 	int sum = 0;
 	int i;
 	double pi;
 
-	srand(time(NULL));
+	random_seed();
 
 	for(i = 0; i < iterations; i++) {
 		int a, b;
 		// calculate two random numbers
-		a = rand();
-		b = rand();
+		a = random_get();
+		b = random_get();
 		// are they co-prime?
 		if(coprime(a, b)) {
 			sum++;
@@ -40,7 +37,8 @@ int main(int argc, char const *argv[]) {
 
 	// calculate pi
 
-	pi = sqrt(6.0 / sum * iterations);
+	pi = (6.0 / sum * iterations);
 
-	printf("%f\n", pi);
+	print_float(pi);
+	print_str("\n");
 }
