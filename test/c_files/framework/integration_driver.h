@@ -1,5 +1,5 @@
 
-/* prototypes */
+/* custom */
 
 void print_str(char* a);
 void print_int(int a);
@@ -15,3 +15,12 @@ void random_seed();
 int random_get();
 
 double math_sqrt(double a);
+
+
+/* standard library */
+
+int printf(const char *format, ...);
+int scanf(const char *format, ...);
+
+void* malloc (unsigned size);
+void free (void* ptr);
