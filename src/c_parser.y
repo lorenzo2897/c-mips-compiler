@@ -93,12 +93,28 @@ TopLevelDeclaration : DeclarationSpecifiers DeclarationList ';' {
 					}
 					| DeclarationSpecifiers Declarator '(' ')' ';' {
 						// function declaration
-						// TODO: keep a list of external function declarations
-						$$ = NULL;
+						$$ = new Function();
+						dynamic_cast<Function*>$$->prototype_only = true;
+
+						// give the function a name
+						dynamic_cast<Function*>$$->function_name = dynamic_cast<Declaration*>$2->identifier;
+
+						// set the type
+						dynamic_cast<Function*>$$->return_type = Type(*$1, dynamic_cast<Declaration*>$2->var_type.pointer_depth);
 					}
 					| DeclarationSpecifiers Declarator '(' FunctionParameterList ')' ';' {
 						// function declaration
-						$$ = NULL;
+						$$ = new Function();
+						dynamic_cast<Function*>$$->prototype_only = true;
+
+						// give the function a name
+						dynamic_cast<Function*>$$->function_name = dynamic_cast<Declaration*>$2->identifier;
+
+						// set the type
+						dynamic_cast<Function*>$$->return_type = Type(*$1, dynamic_cast<Declaration*>$2->var_type.pointer_depth);
+
+						// transfer the parameter list
+						dynamic_cast<Function*>$$->merge_parameters(dynamic_cast<Scope*>$4);
 					}
 					| DeclarationSpecifiers Function {
 						// function definition

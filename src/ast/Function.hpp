@@ -21,6 +21,7 @@ public:
 	std::string function_name;
 	Type return_type;
 	std::vector<Declaration*> parameters;
+	bool prototype_only;
 
 	void merge_parameters(Scope* scope);
 

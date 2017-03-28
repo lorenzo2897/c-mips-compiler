@@ -40,7 +40,11 @@ void ProgramRoot::add(Node* node) {
 	Function* function = dynamic_cast<Function*>(node);
 	Scope* scope = dynamic_cast<Scope*>(node);
 	if(function) {
-		functions.push_back(function);
+		if(function->prototype_only) {
+			function_prototypes.push_back(function);
+		} else {
+			functions.push_back(function);
+		}
 	} else if(scope) {
 		declarations.insert(declarations.end(), scope->declarations.begin(), scope->declarations.end());
 	} else {
@@ -74,6 +78,17 @@ void ProgramRoot::populate_functions(VariableMap& bindings) const {
 		}
 		bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
 	}
+		for(std::vector<Function*>::const_iterator itr = function_prototypes.begin(); itr != function_prototypes.end(); ++itr) {
+			if(bindings.count((*itr)->function_name)) {
+				continue;
+			}
+			// build a list of function parameters
+			std::vector<Type> params;
+			for(std::vector<Declaration*>::const_iterator p = (*itr)->parameters.begin(); p != (*itr)->parameters.end(); ++p) {
+				params.push_back((*p)->var_type);
+			}
+			bindings[(*itr)->function_name] = Binding((*itr)->function_name, (*itr)->return_type, params);
+		}
 }
 
 void ProgramRoot::CompileIR(std::ostream &dst) const {
@@ -152,6 +167,7 @@ void ProgramRoot::CompileMIPS(std::ostream &dst) const {
 							} else if((*itr).second.type.bytes() == 2) {
 								dst << "  " << (*itr).second.alias << ":\n    .half " << (int16_t)val << "\n\n";
 							} else {
+								dst << "    .size " << (*itr).second.alias << ", 4\n\n";
 								dst << "  " << (*itr).second.alias << ":\n    .word " << val << "\n\n";
 							}
 							break;

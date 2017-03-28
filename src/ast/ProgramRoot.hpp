@@ -16,6 +16,7 @@ class ProgramRoot : public Scope {
 
 protected:
 	std::vector<Function*> functions;
+	std::vector<Function*> function_prototypes;
 
 public:
 	virtual void Debug(std::ostream& dst, int indent) const;
