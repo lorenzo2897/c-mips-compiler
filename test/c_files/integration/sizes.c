@@ -1,4 +1,5 @@
-#include <stdio.h>
+
+#include "../framework/integration_driver.h"
 
 int main() {
 	char a;
@@ -9,13 +10,19 @@ int main() {
 	double g;
 	long double h;
 
-	printf("char %d\n", sizeof(a));
-	printf("short %d\n", sizeof(b));
-	printf("int %d\n", sizeof(c));
-	printf("long %d\n", sizeof(d));
-	printf("ll %d\n", sizeof(e));
-	printf("float %d\n", sizeof(f));
-	printf("double %d\n", sizeof(g));
-	printf("long dbl %d\n", sizeof(h));
+	print_str("char ");
+	print_int(sizeof(a));
+	print_str("\nshort ");
+	print_int(sizeof(b));
+	print_str("\nint ");
+	print_int(sizeof(c));
+	print_str("\nlong ");
+	print_int(sizeof(d));
+	print_str("\nfloat ");
+	print_int(sizeof(f));
+	print_str("\ndouble ");
+	print_int(sizeof(g));
+	print_str("\nlong dbl ");
+	print_int(sizeof(h));
+	print_str("\n");
 }
-
