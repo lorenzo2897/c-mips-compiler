@@ -63,6 +63,7 @@ clean :
 	-rm -r ${OUT}/lscc ${OUT}/lscc.dSYM
 	-rm -r ${OUT}/c_lexer ${OUT}/c_lexer.dSYM
 	-rm -r ${OUT}/c_parser ${OUT}/c_parser.dSYM
+	-rm -r ${OUT}/c_compiler ${OUT}/c_compiler.dSYM
 	mkdir -p obj/ast/expressions
 	mkdir -p obj/ast/statements
 	mkdir -p obj/intrep
