@@ -42,4 +42,6 @@ int main(int argc, char const *argv[]) {
 	print_str("pi ~= ");
 	print_float(pi);
 	print_str("\n");
+
+	return 0;
 }

@@ -25,4 +25,6 @@ int main() {
 	print_str("\nlong dbl ");
 	print_int(sizeof(h));
 	print_str("\n");
+
+	return 0;
 }

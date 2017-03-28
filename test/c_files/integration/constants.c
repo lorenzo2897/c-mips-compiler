@@ -34,4 +34,6 @@ int main() {
 		}
 		print_str("\n");
     }
+
+	return 0;
 }

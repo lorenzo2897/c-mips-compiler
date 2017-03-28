@@ -14,4 +14,6 @@ int main() {
 
 	readonly = "yo";
 	printf("\n%s\n", readonly);
+
+	return 0;
 }
