@@ -1,4 +1,14 @@
-# lscc : the langproc coursework C compiler
+# lscc : Lorenzo's C compiler
+
+This compiler implements the full 1989 standard of the C programming language, to a high degree of correctness. The program takes pre-processed C code and generates MIPS assembly code.
+
+The compiler was originally created as the coursework component for EIE2 Language Processors, a course in compiler design and implementation, where it achieved the highest mark in the year.
+
+### Approach
+
+The compiler was written in C++ and makes use of the Flex and Bison compiler tools for parsing.
+
+The C source code is parsed, using the Flex tokeniser and Bison parser, into an abstract syntax tree (AST). The program then traverses the AST to analyse variable and stack allocation, while generating an intermediate representation in a flattened low level pseudo-code. Then, the pseudo-code is stripped of any variable names and each statement is translated into a corresponding set of MIPS assembly instructions.
 
 ## Building the compiler
 
@@ -49,7 +59,7 @@ If none specified, defaults to --compile
 
 ## Testing the compiler
 
-To run the comprehensive testing suite:
+The repository includes a comprehensive testing suite, with automated unit and integration tests for all stages of the compiler. To run the testing suite:
 
 ```
 chmod u+x test/all.sh
@@ -58,11 +68,11 @@ test/all.sh
 
 This will test makefile, build process, lexer, parser, and code generation. It will output a summary of the test results in an HTML page at test/out/summary.html
 
-### Checking makefile dependencies
+#### Checking makefile dependencies
 
 Makefile correctness can be checked by installing [make2graph](https://github.com/lindenb/makefile2graph) and running `test/makefile.sh` from the base directory.
 
-### Testing the tokeniser
+#### Testing the tokeniser
 
 Run `php test/lexer.php` to generate random C tokens and feed them through the lexer to test its functionality.
 
@@ -85,7 +95,7 @@ int func(int a, int b, int c) {
 
 Note that `func()` is the entry point for the unit test. You may provide as many `/*@ */` test tuples as you wish.
 
-#### Running tests
+## Running automated unit tests
 
 To execute all unit tests, run `test/unit.sh`.
 
